@@ -2,6 +2,11 @@
 //  Copyright (c) Microsoft Corporation.  All Rights Reserved.  Licensed under the MIT License.  See License in the project root for license information.
 // ------------------------------------------------------------------------------
 
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Kiota.Abstractions;
+
 namespace Microsoft.Graph.Core.Requests
 {
     using System.Collections.Generic;
@@ -9,37 +14,57 @@ namespace Microsoft.Graph.Core.Requests
     /// <summary>
     /// The type BatchRequestBuilder
     /// </summary>
-    public class BatchRequestBuilder: BaseRequestBuilder, IBatchRequestBuilder
+    public class BatchRequestBuilder
     {
+        /// <summary>Current path for the request</summary>
+        private string CurrentPath { get; set; }
+        /// <summary>Whether the current path is a raw URL</summary>
+        private bool IsRawUrl { get; set; }
+        /// <summary>Path segment to use to build the URL for the current request builder</summary>
+        private string PathSegment { get; set; }
+        /// <summary>The http core service to use to execute the requests.</summary>
+        private IRequestAdapter RequestAdapter { get; set; }
+
         /// <summary>
-        /// Constructs a new BatchRequestBuilder.
+        /// Instantiates a new BatchRequestBuilder and sets the default values.
+        /// <param name="currentPath">Current path for the request</param>
+        /// <param name="isRawUrl">Whether the current path is a raw URL</param>
+        /// <param name="requestAdapter">The http core service to use to execute the requests.</param>
         /// </summary>
-        /// <param name="requestUrl">The URL for the built request.</param>
-        /// <param name="client">The <see cref="IBaseClient"/> for handling requests.</param>
-        public BatchRequestBuilder(
-            string requestUrl, 
-            IBaseClient client) 
-            : base(requestUrl, client)
+        public BatchRequestBuilder(string currentPath, IRequestAdapter requestAdapter, bool isRawUrl = true)
         {
+            if (string.IsNullOrEmpty(currentPath)) throw new ArgumentNullException(nameof(currentPath));
+            _ = requestAdapter ?? throw new ArgumentNullException(nameof(requestAdapter));
+            PathSegment = "/$batch";
+            RequestAdapter = requestAdapter;
+            CurrentPath = currentPath;
+            IsRawUrl = isRawUrl;
         }
 
         /// <summary>
         /// Builds the request.
         /// </summary>
         /// <returns>The built request.</returns>
-        public IBatchRequest Request()
+        public async Task<BatchResponseContent> PostAsync(BatchRequestContent batchRequestContent, Action<IDictionary<string, string>> h = default, IEnumerable<IRequestOption> o = default, IResponseHandler responseHandler = default)
         {
-            return this.Request(null);
+            _ = batchRequestContent ?? throw new ArgumentNullException(nameof(batchRequestContent));
+            var requestInfo = CreatePostRequestInformation(batchRequestContent, h, o);
+            return await RequestAdapter.SendPrimitiveAsync<BatchResponseContent>(requestInfo); // TODO add responseHandler
         }
 
-        /// <summary>
-        /// Builds the request.
-        /// </summary>
-        /// <param name="options">The query and header options for the request.</param>
-        /// <returns>The built request.</returns>
-        public IBatchRequest Request(IEnumerable<Option> options)
+        public RequestInformation CreatePostRequestInformation(BatchRequestContent batchRequestContent, Action<IDictionary<string, string>> h = default, IEnumerable<IRequestOption> o = default)
         {
-            return new BatchRequest(this.RequestUrl,this.Client,options);
+            _ = batchRequestContent ?? throw new ArgumentNullException(nameof(batchRequestContent));
+            var requestInfo = new RequestInformation
+            {
+                HttpMethod = HttpMethod.POST,
+            };
+            requestInfo.SetURI(CurrentPath, PathSegment, IsRawUrl);
+            requestInfo.Headers.Add("Content-Type", "application/json");
+            requestInfo.SetStreamContent(batchRequestContent.ReadAsStream());
+            h?.Invoke(requestInfo.Headers);
+            requestInfo.AddRequestOptions(o?.ToArray());
+            return requestInfo;
         }
     }
 }

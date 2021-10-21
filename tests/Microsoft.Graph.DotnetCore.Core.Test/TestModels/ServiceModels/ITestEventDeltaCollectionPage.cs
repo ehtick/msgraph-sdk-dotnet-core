@@ -2,6 +2,8 @@
 //  Copyright (c) Microsoft Corporation.  All Rights Reserved.  Licensed under the MIT License.  See License in the project root for license information.
 // ------------------------------------------------------------------------------
 
+using Microsoft.Kiota.Abstractions;
+
 namespace Microsoft.Graph.DotnetCore.Core.Test.TestModels.ServiceModels
 {
     /// <summary>
@@ -18,7 +20,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.TestModels.ServiceModels
         /// <summary>
         /// Initializes the NextPageRequest property.
         /// </summary>
-        void InitializeNextPageRequest(IBaseClient client, string nextPageLinkString);
+        void InitializeNextPageRequest(IRequestAdapter client, string nextPageLinkString);
     }
 
 }

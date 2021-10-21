@@ -9,7 +9,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Extensions
     using System.Text;
     using System.Threading.Tasks;
     using Xunit;
-    public class HttpRequestMessageExtensionsTests: BaseRequestTests
+    public class HttpRequestMessageExtensionsTests
     {
         [Fact]
         public void IsBuffered_Get()
@@ -66,27 +66,16 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Extensions
             Assert.False(response, "Unexpected content type");
         }
 
-        [Fact]
-        public void GetRequestContext_ShouldReturnRequestContext()
-        {
-            string requestUrl = "https://foo.bar";
-            var baseRequest = new BaseRequest(requestUrl, this.baseClient);
-
-            HttpRequestMessage httpRequestMessage = baseRequest.GetHttpRequestMessage();
-
-            Assert.NotNull(httpRequestMessage.GetRequestContext());
-        }
-
-        [Fact]
-        public void GetMiddlewareControl_ShouldReturnIMiddlewareOptionObject()
-        {
-            string requestUrl = "https://localhost/v2";
-            var baseRequest = new BaseRequest(requestUrl, this.baseClient);
-
-            HttpRequestMessage httpRequestMessage = baseRequest.GetHttpRequestMessage();
-
-            Assert.NotNull(httpRequestMessage.GetMiddlewareOption<AuthenticationHandlerOption>());
-        }
+        // [Fact]
+        // public void GetRequestContext_ShouldReturnRequestContext()
+        // {
+        //     string requestUrl = "https://foo.bar";
+        //     var baseRequest = new BaseRequest(requestUrl, this.baseClient);
+        //
+        //     HttpRequestMessage httpRequestMessage = baseRequest.GetHttpRequestMessage();
+        //
+        //     Assert.NotNull(httpRequestMessage.GetRequestContext());
+        // }
 
         [Fact]
         public async Task CloneAsync_WithEmptyHttpContent()

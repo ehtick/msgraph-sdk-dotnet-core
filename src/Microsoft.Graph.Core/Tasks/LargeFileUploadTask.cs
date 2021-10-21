@@ -2,6 +2,12 @@
 //  Copyright (c) Microsoft Corporation.  All Rights Reserved.  Licensed under the MIT License.  See License in the project root for license information.
 // ------------------------------------------------------------------------------
 
+using Microsoft.Graph.Core.Models;
+using Microsoft.Kiota.Abstractions;
+using Microsoft.Kiota.Abstractions.Authentication;
+using Microsoft.Kiota.Authentication.Azure;
+using Microsoft.Kiota.Http.HttpClientLibrary;
+
 namespace Microsoft.Graph
 {
     using System;
@@ -18,7 +24,7 @@ namespace Microsoft.Graph
         private const int DefaultMaxSliceSize = 5 * 1024 * 1024;
         private const int RequiredSliceSizeIncrement = 320 * 1024;
         private IUploadSession Session { get; set; }
-        private readonly IBaseClient _client;
+        private readonly IRequestAdapter _client;
         private readonly Stream _uploadStream;
         private readonly int _maxSliceSize;
         private List<Tuple<long, long>> _rangesRemaining;
@@ -33,7 +39,7 @@ namespace Microsoft.Graph
         /// <param name="maxSliceSize">Max size of each slice to be uploaded. Multiple of 320 KiB (320 * 1024) is required.</param>
         /// <param name="baseClient"><see cref="IBaseClient"/> to use for making upload requests. The client should not set Auth headers as upload urls do not need them.
         /// If less than 0, default value of 5 MiB is used. .</param>
-        public LargeFileUploadTask(IUploadSession uploadSession, Stream uploadStream,  int maxSliceSize = -1, IBaseClient baseClient = null)
+        public LargeFileUploadTask(IUploadSession uploadSession, Stream uploadStream,  int maxSliceSize = -1, IRequestAdapter baseClient = null)
         {
             if (!uploadStream.CanRead || !uploadStream.CanSeek)
             {
@@ -41,7 +47,7 @@ namespace Microsoft.Graph
             }
 
             this.Session = uploadSession;
-            this._client = baseClient ?? this.InitializeClient(uploadSession.UploadUrl);
+            this._client = baseClient ?? this.InitializeClient();
             this._uploadStream = uploadStream;
             this._rangesRemaining = this.GetRangesRemaining(uploadSession);
             this._maxSliceSize = maxSliceSize < 0 ? DefaultMaxSliceSize : maxSliceSize;
@@ -56,11 +62,11 @@ namespace Microsoft.Graph
         /// </summary>
         /// <param name="uploadUrl">Url to perform the upload to from the session</param>
         /// <returns></returns>
-        private IBaseClient InitializeClient(string uploadUrl)
+        private IRequestAdapter InitializeClient()
         {
-            HttpClient httpClient = GraphClientFactory.Create(authenticationProvider: null); //no auth
+            HttpClient httpClient = GraphClientFactory.Create(); //no auth
             httpClient.SetFeatureFlag(FeatureFlag.FileUploadTask);
-            return new BaseClient(uploadUrl, httpClient);
+            return new HttpClientRequestAdapter(new AnonymousAuthenticationProvider(), httpClient: httpClient);
         }
 
         /// <summary>
@@ -207,7 +213,8 @@ namespace Microsoft.Graph
         public async Task<IUploadSession> UpdateSessionStatusAsync()
         {
             var request = new UploadSessionRequest(this.Session, this._client);
-            var newSession = await request.GetAsync().ConfigureAwait(false);
+            var newSession = new UploadSession(); // TODO fixme
+            // var newSession = await request.GetAsync().ConfigureAwait(false);
 
             var newRangesRemaining = this.GetRangesRemaining(newSession);
 

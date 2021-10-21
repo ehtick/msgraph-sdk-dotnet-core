@@ -2,6 +2,8 @@
 //  Copyright (c) Microsoft Corporation.  All Rights Reserved.  Licensed under the MIT License.  See License in the project root for license information.
 // ------------------------------------------------------------------------------
 
+using Microsoft.Kiota.Abstractions;
+
 namespace Microsoft.Graph
 {
     using System.Collections.Generic;
@@ -15,7 +17,7 @@ namespace Microsoft.Graph
     /// The UploadSliceRequest class to help with uploading file slices
     /// </summary>
     /// <typeparam name="T">The type to be uploaded</typeparam>
-    internal class UploadSliceRequest<T> : BaseRequest
+    internal class UploadSliceRequest<T>
     {
         private UploadResponseHandler responseHandler;
 
@@ -50,11 +52,10 @@ namespace Microsoft.Graph
         /// across all slice.</param>
         public UploadSliceRequest(
             string sessionUrl,
-            IBaseClient client,
+            IRequestAdapter client,
             long rangeBegin,
             long rangeEnd,
             long totalSessionLength)
-            : base(sessionUrl, client, null)
         {
             this.RangeBegin = rangeBegin;
             this.RangeEnd = rangeEnd;
@@ -82,8 +83,8 @@ namespace Microsoft.Graph
         /// is true, then the item has completed, and the value is the created item from the server.</returns>
         public virtual async Task<UploadResult<T>> PutAsync(Stream stream, CancellationToken cancellationToken)
         {
-            this.Method = HttpMethods.PUT;
-            this.ContentType = CoreConstants.MimeTypeNames.Application.Stream;
+            // this.Method = HttpMethods.PUT;
+            // this.ContentType = CoreConstants.MimeTypeNames.Application.Stream;
             using (var response = await this.SendRequestAsync(stream, cancellationToken).ConfigureAwait(false))
             {
                 return await this.responseHandler.HandleResponse<T>(response);
@@ -103,14 +104,16 @@ namespace Microsoft.Graph
             HttpCompletionOption completionOption = HttpCompletionOption.ResponseContentRead)
         {
             // Append the relevant headers for the range upload request
-            using (var request = this.GetHttpRequestMessage())
-            {
-                request.Content = new StreamContent(stream);
-                request.Content.Headers.ContentRange = new ContentRangeHeaderValue(this.RangeBegin, this.RangeEnd, this.TotalSessionLength);
-                request.Content.Headers.ContentLength = this.RangeLength;
-
-                return await this.Client.HttpProvider.SendAsync(request, completionOption, cancellationToken).ConfigureAwait(false);
-            }
+            // TODO rebuild this using request information
+            return default;
+            // using (var request = this.GetHttpRequestMessage())
+            // {
+            //     request.Content = new StreamContent(stream);
+            //     request.Content.Headers.ContentRange = new ContentRangeHeaderValue(this.RangeBegin, this.RangeEnd, this.TotalSessionLength);
+            //     request.Content.Headers.ContentLength = this.RangeLength;
+            //
+            //     return await this.Client.HttpProvider.SendAsync(request, completionOption, cancellationToken).ConfigureAwait(false);
+            // }
         }
     }
 }

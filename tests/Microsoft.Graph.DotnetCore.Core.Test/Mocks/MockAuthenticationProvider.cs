@@ -2,6 +2,9 @@
 //  Copyright (c) Microsoft Corporation.  All Rights Reserved.  Licensed under the MIT License.  See License in the project root for license information.
 // ------------------------------------------------------------------------------
 
+using Microsoft.Kiota.Abstractions;
+using Microsoft.Kiota.Abstractions.Authentication;
+
 namespace Microsoft.Graph.DotnetCore.Core.Test.Mocks
 {
     using Moq;
@@ -17,7 +20,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Mocks
             this.SetupAllProperties();
 
             this.Setup(
-                provider => provider.AuthenticateRequestAsync(It.IsAny<HttpRequestMessage>()))
+                provider => provider.AuthenticateRequestAsync(It.IsAny<RequestInformation>()))
                 .Callback<HttpRequestMessage>(r => r.Headers.Authorization = new AuthenticationHeaderValue(CoreConstants.Headers.Bearer, accessToken ?? "Default-Token"))
                 .Returns(Task.FromResult(0));
         }

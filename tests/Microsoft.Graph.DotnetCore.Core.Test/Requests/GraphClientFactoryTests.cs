@@ -2,6 +2,8 @@
 //  Copyright (c) Microsoft Corporation.  All Rights Reserved.  Licensed under the MIT License.  See License in the project root for license information.
 // ------------------------------------------------------------------------------
 
+using Microsoft.Kiota.Http.HttpClientLibrary.Middleware;
+
 namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
 {
     using Mocks;
@@ -27,7 +29,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
         {
             this.testHttpMessageHandler = new MockRedirectHandler();
             testAuthenticationProvider = new MockAuthenticationProvider(expectedAccessToken);
-            handlers = GraphClientFactory.CreateDefaultHandlers(testAuthenticationProvider.Object).ToArray();
+            handlers = GraphClientFactory.CreateDefaultHandlers().ToArray();
         }
 
         public void Dispose()
@@ -72,18 +74,18 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
         [Fact]
         public void Should_CreatePipeline_Without_HttpMessageHandlerInput()
         {
-            using (AuthenticationHandler authenticationHandler = (AuthenticationHandler)GraphClientFactory.CreatePipeline(handlers))
-            using (CompressionHandler compressionHandler = (CompressionHandler)authenticationHandler.InnerHandler)
+            // using (AuthenticationHandler authenticationHandler = (AuthenticationHandler)GraphClientFactory.CreatePipeline(handlers))
+            using (CompressionHandler compressionHandler = (CompressionHandler)GraphClientFactory.CreatePipeline(handlers))
             using (RetryHandler retryHandler = (RetryHandler)compressionHandler.InnerHandler)
             using (RedirectHandler redirectHandler = (RedirectHandler)retryHandler.InnerHandler)
             using (HttpMessageHandler innerMost = redirectHandler.InnerHandler)
             {
-                Assert.NotNull(authenticationHandler);
+                // Assert.NotNull(authenticationHandler);
                 Assert.NotNull(compressionHandler);
                 Assert.NotNull(retryHandler);
                 Assert.NotNull(redirectHandler);
                 Assert.NotNull(innerMost);
-                Assert.IsType<AuthenticationHandler>(authenticationHandler);
+                // Assert.IsType<AuthenticationHandler>(authenticationHandler);
                 Assert.IsType<CompressionHandler>(compressionHandler);
                 Assert.IsType<RetryHandler>(retryHandler);
                 Assert.IsType<RedirectHandler>(redirectHandler);
@@ -95,18 +97,18 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
         [Fact]
         public void CreatePipelineWithHttpMessageHandlerInput()
         {
-            using (AuthenticationHandler authenticationHandler = (AuthenticationHandler)GraphClientFactory.CreatePipeline(handlers, this.testHttpMessageHandler))
-            using (CompressionHandler compressionHandler = (CompressionHandler)authenticationHandler.InnerHandler)
+            // using (AuthenticationHandler authenticationHandler = (AuthenticationHandler)GraphClientFactory.CreatePipeline(handlers, this.testHttpMessageHandler))
+            using (CompressionHandler compressionHandler = (CompressionHandler)GraphClientFactory.CreatePipeline(handlers))
             using (RetryHandler retryHandler = (RetryHandler)compressionHandler.InnerHandler)
             using (RedirectHandler redirectHandler = (RedirectHandler)retryHandler.InnerHandler)
             using (MockRedirectHandler innerMost = (MockRedirectHandler)redirectHandler.InnerHandler)
             {
-                Assert.NotNull(authenticationHandler);
+                // Assert.NotNull(authenticationHandler);
                 Assert.NotNull(compressionHandler);
                 Assert.NotNull(retryHandler);
                 Assert.NotNull(redirectHandler);
                 Assert.NotNull(innerMost);
-                Assert.IsType<AuthenticationHandler>(authenticationHandler);
+                // Assert.IsType<AuthenticationHandler>(authenticationHandler);
                 Assert.IsType<CompressionHandler>(compressionHandler);
                 Assert.IsType<RetryHandler>(retryHandler);
                 Assert.IsType<RedirectHandler>(redirectHandler);
@@ -124,16 +126,16 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
             }
         }
 
-        [Fact]
-        public void CreatePipeline_Should_Throw_Exception_With_Duplicate_Handlers()
-        {
-            var handlers = GraphClientFactory.CreateDefaultHandlers(testAuthenticationProvider.Object);
-            handlers.Add(new AuthenticationHandler(testAuthenticationProvider.Object));
-
-            ArgumentException exception =  Assert.Throws<ArgumentException>(() => GraphClientFactory.CreatePipeline(handlers));
-
-            Assert.Contains($"{typeof(AuthenticationHandler)} has a duplicate handler.", exception.Message);
-        }
+        // [Fact]
+        // public void CreatePipeline_Should_Throw_Exception_With_Duplicate_Handlers()
+        // {
+        //     var handlers = GraphClientFactory.CreateDefaultHandlers();
+        //     // handlers.Add(new AuthenticationHandler(testAuthenticationProvider.Object));
+        //
+        //     ArgumentException exception =  Assert.Throws<ArgumentException>(() => GraphClientFactory.CreatePipeline(handlers));
+        //
+        //     Assert.Contains($"{typeof(AuthenticationHandler)} has a duplicate handler.", exception.Message);
+        // }
 
         [Fact]
         public void CreateClient_CustomHttpHandlingBehaviors()
@@ -142,7 +144,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
             var baseAddress = new Uri("https://localhost");
             var cacheHeader = new CacheControlHeaderValue();
             
-            using (HttpClient client = GraphClientFactory.Create(testAuthenticationProvider.Object))
+            using (HttpClient client = GraphClientFactory.Create())
             {
                 client.Timeout = timeout;
                 client.BaseAddress = baseAddress;
@@ -155,7 +157,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
         [Fact]
         public void CreateClient_SelectedCloud()
         {
-            using (HttpClient httpClient = GraphClientFactory.Create(testAuthenticationProvider.Object, version: "beta", nationalCloud: GraphClientFactory.Germany_Cloud))
+            using (HttpClient httpClient = GraphClientFactory.Create(version: "beta", nationalCloud: GraphClientFactory.Germany_Cloud))
             {
                 Assert.NotNull(httpClient);
                 Uri clouldEndpoint = new Uri("https://graph.microsoft.de/beta/");
@@ -170,7 +172,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
             string nation = "Canada";
             try
             {
-                HttpClient httpClient = GraphClientFactory.Create(testAuthenticationProvider.Object, nationalCloud: nation);
+                HttpClient httpClient = GraphClientFactory.Create(nationalCloud: nation);
             }
             catch (ArgumentException exception)
             {
@@ -182,7 +184,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
         [Fact]
         public void CreateClient_WithInnerHandler()
         {
-            using (HttpClient httpClient = GraphClientFactory.Create(authenticationProvider: testAuthenticationProvider.Object, finalHandler: this.testHttpMessageHandler))
+            using (HttpClient httpClient = GraphClientFactory.Create(finalHandler: this.testHttpMessageHandler))
             {
                 Assert.NotNull(httpClient);
                 Assert.True(httpClient.DefaultRequestHeaders.Contains(CoreConstants.Headers.SdkVersionHeaderName), "SDK version not set.");
@@ -203,7 +205,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
         [Fact]
         public void CreateClient_WithHandlers()
         {
-            using (HttpClient client = GraphClientFactory.Create(handlers: GraphClientFactory.CreateDefaultHandlers(testAuthenticationProvider.Object)))
+            using (HttpClient client = GraphClientFactory.Create(handlers: GraphClientFactory.CreateDefaultHandlers()))
             {
                 Assert.NotNull(client);
             }
@@ -219,7 +221,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
             var oKResponse = new HttpResponseMessage(HttpStatusCode.OK);
             this.testHttpMessageHandler.SetHttpResponse(redirectResponse, oKResponse);
 
-            using (HttpClient client = GraphClientFactory.Create(authenticationProvider: testAuthenticationProvider.Object, finalHandler: this.testHttpMessageHandler))
+            using (HttpClient client = GraphClientFactory.Create(finalHandler: this.testHttpMessageHandler))
             {
                 var response = await client.SendAsync(httpRequestMessage, new CancellationToken());
                 Assert.Equal(response, oKResponse);
@@ -241,7 +243,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
 
             this.testHttpMessageHandler.SetHttpResponse(retryResponse, response_2);
 
-            using (HttpClient client = GraphClientFactory.Create(authenticationProvider: testAuthenticationProvider.Object, finalHandler: this.testHttpMessageHandler))
+            using (HttpClient client = GraphClientFactory.Create(finalHandler: this.testHttpMessageHandler))
             {
                 var response = await client.SendAsync(httpRequestMessage, new CancellationToken());
                 Assert.Same(response, response_2);
@@ -265,7 +267,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
 
             testHttpMessageHandler.SetHttpResponse(unauthorizedResponse, okResponse);
 
-            IList<DelegatingHandler> handlersWithNoAuthProvider = GraphClientFactory.CreateDefaultHandlers(null);
+            IList<DelegatingHandler> handlersWithNoAuthProvider = GraphClientFactory.CreateDefaultHandlers();
 
             using (HttpClient client = GraphClientFactory.Create(handlers: handlersWithNoAuthProvider, finalHandler: this.testHttpMessageHandler))
             {
@@ -297,7 +299,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
         [Fact]
         public void CreateClient_WithHandlersHasExceptions()
         {
-            var pipelineHandlers = GraphClientFactory.CreateDefaultHandlers(testAuthenticationProvider.Object).ToArray();
+            var pipelineHandlers = GraphClientFactory.CreateDefaultHandlers().ToArray();
             pipelineHandlers[pipelineHandlers.Length - 1] = null;
             try
             {
@@ -314,7 +316,10 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
         public void CreateClient_WithInnerHandlerReference()
         {
             DelegatingHandler[] handlers = new DelegatingHandler[1];
-            handlers[0] = new RetryHandler(this.testHttpMessageHandler);
+            handlers[0] = new RetryHandler()
+            {
+                InnerHandler = this.testHttpMessageHandler
+            };
             // Creation should ignore the InnerHandler on RetryHandler
             HttpClient client = GraphClientFactory.Create(handlers: handlers);
             Assert.NotNull(client);
@@ -326,7 +331,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
         {
             FeatureFlag expectedFlag = FeatureFlag.AuthHandler | FeatureFlag.CompressionHandler | FeatureFlag.RetryHandler | FeatureFlag.RedirectHandler;
             string expectedFlagHeaderValue = Enum.Format(typeof(FeatureFlag), expectedFlag, "x");
-            var handlers = GraphClientFactory.CreateDefaultHandlers(null);
+            var handlers = GraphClientFactory.CreateDefaultHandlers();
             var pipelineWithHandlers = GraphClientFactory.CreatePipelineWithFeatureFlags(handlers);
 
             Assert.NotNull(pipelineWithHandlers.Pipeline);
@@ -337,7 +342,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
         public void CreatePipelineWithFeatureFlags_Should_Set_FeatureFlag_For_Speficied_Handlers()
         {
             FeatureFlag expectedFlag = FeatureFlag.AuthHandler | FeatureFlag.CompressionHandler | FeatureFlag.RetryHandler;
-            var handlers = GraphClientFactory.CreateDefaultHandlers(null);
+            var handlers = GraphClientFactory.CreateDefaultHandlers();
             handlers.RemoveAt(3);
             var pipelineWithHandlers = GraphClientFactory.CreatePipelineWithFeatureFlags(handlers);
 

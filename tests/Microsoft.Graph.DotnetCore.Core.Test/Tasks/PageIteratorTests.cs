@@ -2,6 +2,8 @@
 //  Copyright (c) Microsoft Corporation.  All Rights Reserved.  Licensed under the MIT License.  See License in the project root for license information.
 // ------------------------------------------------------------------------------
 
+using Microsoft.Kiota.Abstractions;
+
 namespace Microsoft.Graph.DotnetCore.Core.Test.Tasks
 {
     using System;
@@ -30,20 +32,20 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Tasks
                 AdditionalData = new Dictionary<string, object>()
             };
 
-            eventPageIterator = PageIterator<TestEvent>.CreatePageIterator(baseClient, page, (e) => { return true; });
+            eventPageIterator = PageIterator<TestEvent>.CreatePageIterator(requestAdapter, page, (e) => { return true; });
             await Assert.ThrowsAsync<RuntimeBinderException>(() => eventPageIterator.IterateAsync());
         }
 
         [Fact]
         public void Given_Null_CollectionPage_It_Throws_ArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() => PageIterator<TestEvent>.CreatePageIterator(baseClient, null, (e) => { return true; }));
+            Assert.Throws<ArgumentNullException>(() => PageIterator<TestEvent>.CreatePageIterator(requestAdapter, null, (e) => { return true; }));
         }
 
         [Fact]
         public void Given_Null_Delegate_It_Throws_ArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() => PageIterator<TestEvent>.CreatePageIterator(baseClient, new CollectionPage<TestEvent>(), null));
+            Assert.Throws<ArgumentNullException>(() => PageIterator<TestEvent>.CreatePageIterator(requestAdapter, new CollectionPage<TestEvent>(), null));
         }
 
         [Fact]
@@ -58,7 +60,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Tasks
 
             List<TestEvent> events = new List<TestEvent>();
 
-            eventPageIterator = PageIterator<TestEvent>.CreatePageIterator(baseClient, page, (e) =>
+            eventPageIterator = PageIterator<TestEvent>.CreatePageIterator(requestAdapter, page, (e) =>
             {
                 events.Add(e);
                 return true;
@@ -81,7 +83,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Tasks
 
             List<TestEvent> events = new List<TestEvent>();
 
-            eventPageIterator = PageIterator<TestEvent>.CreatePageIterator(baseClient, page, (e) =>
+            eventPageIterator = PageIterator<TestEvent>.CreatePageIterator(requestAdapter, page, (e) =>
             {
                 if (e.Subject == "Subject7")
                     return false;
@@ -140,7 +142,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Tasks
 
             var mockUserEventsCollectionPage = SetupMocks(testEvents, nextPage);
 
-            eventPageIterator = PageIterator<TestEvent>.CreatePageIterator(baseClient, mockUserEventsCollectionPage, processEachEvent);
+            eventPageIterator = PageIterator<TestEvent>.CreatePageIterator(requestAdapter, mockUserEventsCollectionPage, processEachEvent);
             await eventPageIterator.IterateAsync(pagingToken);
 
             Assert.True(cancellationTokenSource.IsCancellationRequested, "The delegate page iterator did not cancel requests to fetch more pages.");
@@ -183,7 +185,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Tasks
 
             var mockUserEventsCollectionPage = SetupMocks(originalCollectionPageEvents, nextPage);
 
-            eventPageIterator = PageIterator<TestEvent>.CreatePageIterator(baseClient, mockUserEventsCollectionPage, processEachEvent);
+            eventPageIterator = PageIterator<TestEvent>.CreatePageIterator(requestAdapter, mockUserEventsCollectionPage, processEachEvent);
             await eventPageIterator.IterateAsync();
 
             Assert.True(reachedNextPage, "The delegate page iterator did not reach the next page.");
@@ -210,7 +212,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Tasks
             }
 
             // This will be the same nextLink value as the one set in MockUserEventsCollectionPage constructor.
-            nextPage.InitializeNextPageRequest(baseClient, "https://graph.microsoft.com/v1.0/me/events?$skip=10");
+            nextPage.InitializeNextPageRequest(requestAdapter, "https://graph.microsoft.com/v1.0/me/events?$skip=10");
 
             // Create the delegate to process each entity returned in the pages. The delegate will 
             // signal that we reached an event in the next page.
@@ -221,7 +223,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Tasks
 
             var mockUserEventsCollectionPage = SetupMocks(originalCollectionPageEvents, nextPage);
 
-            eventPageIterator = PageIterator<TestEvent>.CreatePageIterator(baseClient, mockUserEventsCollectionPage, processEachEvent);
+            eventPageIterator = PageIterator<TestEvent>.CreatePageIterator(requestAdapter, mockUserEventsCollectionPage, processEachEvent);
 
             ServiceException exception = await Assert.ThrowsAsync<ServiceException>(async () => await eventPageIterator.IterateAsync());
             Assert.Contains("Detected nextLink loop", exception.Message);
@@ -251,7 +253,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Tasks
 
                 var mockUserEventsCollectionPage = SetupMocks(originalCollectionPageEvents, nextPage);
 
-                eventPageIterator = PageIterator<TestEvent>.CreatePageIterator(baseClient, mockUserEventsCollectionPage, processEachEvent);
+                eventPageIterator = PageIterator<TestEvent>.CreatePageIterator(requestAdapter, mockUserEventsCollectionPage, processEachEvent);
                 await eventPageIterator.IterateAsync();
             }
             catch (Exception)
@@ -270,7 +272,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Tasks
             var mockUserEventsCollectionPage = SetupMocks(originalCollectionPageEvents, nextPage);
 
             // Act
-            eventPageIterator = PageIterator<TestEvent>.CreatePageIterator(baseClient, mockUserEventsCollectionPage, (e) => { return true; });
+            eventPageIterator = PageIterator<TestEvent>.CreatePageIterator(requestAdapter, mockUserEventsCollectionPage, (e) => { return true; });
 
             // Assert
             Assert.Equal(PagingState.NotStarted, eventPageIterator.State);
@@ -302,7 +304,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Tasks
             // Create the delegate to configure the next page request. The delegate will signal that it was invoked.
             bool requestConfiguratorInvoked = false;
 
-            Func<IBaseRequest, IBaseRequest> requestConfigurator = (request) =>
+            Func<RequestInformation, RequestInformation> requestConfigurator = (request) =>
             {
                 requestConfiguratorInvoked = true;
                 return request;
@@ -310,7 +312,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Tasks
 
             var mockUserEventsCollectionPage = SetupMocks(originalCollectionPageEvents, nextPage);
 
-            eventPageIterator = PageIterator<TestEvent>.CreatePageIterator(baseClient, mockUserEventsCollectionPage, processEachEvent, requestConfigurator);
+            eventPageIterator = PageIterator<TestEvent>.CreatePageIterator(requestAdapter, mockUserEventsCollectionPage, processEachEvent, requestConfigurator);
             await eventPageIterator.IterateAsync();
 
             Assert.True(requestConfiguratorInvoked, "The delegate request configurator not invoked.");
@@ -320,10 +322,10 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Tasks
         private ITestEventDeltaCollectionPage SetupMocks(List<TestEvent> originalCollectionPageEvents, TestEventDeltaCollectionPage nextPage)
         {
             var mockUserEventsCollectionRequest = new Mock<ITestEventDeltaRequest>(MockBehavior.Strict);
-            mockUserEventsCollectionRequest.Setup(userEventsCollectionRequest => userEventsCollectionRequest.GetAsync(It.IsAny<CancellationToken>()))
-                .Returns((CancellationToken token) => Task.FromResult<ITestEventDeltaCollectionPage>(nextPage));
-            mockUserEventsCollectionRequest.Setup(userEventsCollectionRequest => userEventsCollectionRequest.GetHttpRequestMessage())
-                .Returns(() => new HttpRequestMessage(HttpMethod.Get, "https://graph.microsoft.com/v1.0/me/events?$skip=10"));
+            // mockUserEventsCollectionRequest.Setup(userEventsCollectionRequest => userEventsCollectionRequest.GetAsync(It.IsAny<CancellationToken>()))
+            //     .Returns((CancellationToken token) => Task.FromResult<ITestEventDeltaCollectionPage>(nextPage));
+            // mockUserEventsCollectionRequest.Setup(userEventsCollectionRequest => userEventsCollectionRequest.GetHttpRequestMessage())
+            //     .Returns(() => new HttpRequestMessage(HttpMethod.Get, "https://graph.microsoft.com/v1.0/me/events?$skip=10"));
 
             var mockUserEventsCollectionPage = new Mock<ITestEventDeltaCollectionPage>(MockBehavior.Strict);
             mockUserEventsCollectionPage.Setup(userEventsCollectionPage => userEventsCollectionPage.NextPageRequest)

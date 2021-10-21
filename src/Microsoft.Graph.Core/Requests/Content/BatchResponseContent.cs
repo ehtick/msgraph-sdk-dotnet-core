@@ -2,6 +2,8 @@
 //  Copyright (c) Microsoft Corporation.  All Rights Reserved.  Licensed under the MIT License.  See License in the project root for license information.
 // ------------------------------------------------------------------------------
 
+using Microsoft.Kiota.Abstractions;
+
 namespace Microsoft.Graph
 {
     using System;
@@ -45,7 +47,7 @@ namespace Microsoft.Graph
             });
 
             this.Serializer = serializer ?? new Serializer();
-            this.ResponseHandler = responseHandler ?? new ResponseHandler(this.Serializer);
+            this.ResponseHandler = responseHandler ?? new NativeResponseHandler();
         }
 
         /// <summary>
@@ -105,7 +107,7 @@ namespace Microsoft.Graph
             {
                 await ValidateSuccessfulResponse(httpResponseMessage);
                 // return the deserialized object
-                return await ResponseHandler.HandleResponse<T>(httpResponseMessage);
+                return await ResponseHandler.HandleResponseAsync<HttpResponseMessage,T>(httpResponseMessage);
             }
         }
 
@@ -140,7 +142,7 @@ namespace Microsoft.Graph
                 string rawResponseBody = null;
 
                 //deserialize into an ErrorResponse as the result is not a success.
-                ErrorResponse errorResponse = await ResponseHandler.HandleResponse<ErrorResponse>(httpResponseMessage);
+                ErrorResponse errorResponse = await ResponseHandler.HandleResponseAsync<HttpResponseMessage,ErrorResponse>(httpResponseMessage);
 
                 if (errorResponse?.Error == null)
                 {

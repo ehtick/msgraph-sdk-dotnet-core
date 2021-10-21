@@ -2,6 +2,8 @@
 //  Copyright (c) Microsoft Corporation.  All Rights Reserved.  Licensed under the MIT License.  See License in the project root for license information.
 // ------------------------------------------------------------------------------
 
+using Microsoft.Kiota.Abstractions;
+
 namespace Microsoft.Graph
 {
     using Microsoft.Graph.Core.Models;
@@ -11,7 +13,7 @@ namespace Microsoft.Graph
     /// <summary>
     /// The UploadSessionRequest class
     /// </summary>
-    internal class UploadSessionRequest : BaseRequest
+    internal class UploadSessionRequest
     {
         private readonly UploadResponseHandler responseHandler;
 
@@ -20,8 +22,7 @@ namespace Microsoft.Graph
         /// </summary>
         /// <param name="session">The IUploadSession to use in the request.</param>
         /// <param name="client">The <see cref="IBaseClient"/> for handling requests.</param>
-        public UploadSessionRequest(IUploadSession session, IBaseClient client)
-            : base(session.UploadUrl, client, null)
+        public UploadSessionRequest(IUploadSession session, IRequestAdapter client)
         {
             this.responseHandler = new UploadResponseHandler();
         }
@@ -42,35 +43,35 @@ namespace Microsoft.Graph
         /// <returns>The task to await.</returns>
         public async Task DeleteAsync(CancellationToken cancellationToken)
         {
-            this.Method = HttpMethods.DELETE;
-            using (var response = await this.SendRequestAsync(null, cancellationToken).ConfigureAwait(false))
-            {
-            }
+            // this.Method = HttpMethods.DELETE;
+            // using (var response = await this.SendRequestAsync(null, cancellationToken).ConfigureAwait(false))
+            // {
+            // }
         }
 
-        /// <summary>
-        /// Gets the specified UploadSession.
-        /// </summary>
-        /// <returns>The Item.</returns>
-        public Task<IUploadSession> GetAsync()
-        {
-            return this.GetAsync(CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Gets the specified UploadSession.
-        /// </summary>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> for the request.</param>
-        /// <returns>The Item.</returns>
-        public async Task<IUploadSession> GetAsync(CancellationToken cancellationToken)
-        {
-            this.Method = HttpMethods.GET;
-
-            using (var response = await this.SendRequestAsync(null, cancellationToken).ConfigureAwait(false))
-            {
-                var uploadResult = await this.responseHandler.HandleResponse<UploadSession>(response);
-                return uploadResult.UploadSession;
-            }
-        }
+        // /// <summary>
+        // /// Gets the specified UploadSession.
+        // /// </summary>
+        // /// <returns>The Item.</returns>
+        // public Task<IUploadSession> GetAsync()
+        // {
+        //     return this.GetAsync(CancellationToken.None);
+        // }
+        //
+        // /// <summary>
+        // /// Gets the specified UploadSession.
+        // /// </summary>
+        // /// <param name="cancellationToken">The <see cref="CancellationToken"/> for the request.</param>
+        // /// <returns>The Item.</returns>
+        // public async Task<IUploadSession> GetAsync(CancellationToken cancellationToken)
+        // {
+        //     this.Method = HttpMethods.GET;
+        //
+        //     using (var response = await this.SendRequestAsync(null, cancellationToken).ConfigureAwait(false))
+        //     {
+        //         var uploadResult = await this.responseHandler.HandleResponse<UploadSession>(response);
+        //         return uploadResult.UploadSession;
+        //     }
+        // }
     }
 }

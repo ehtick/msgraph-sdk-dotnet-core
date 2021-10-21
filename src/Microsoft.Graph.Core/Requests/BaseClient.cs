@@ -2,6 +2,12 @@
 //  Copyright (c) Microsoft Corporation.  All Rights Reserved.  Licensed under the MIT License.  See License in the project root for license information.
 // ------------------------------------------------------------------------------
 
+using System.Linq;
+using Microsoft.Kiota.Abstractions;
+using Microsoft.Kiota.Abstractions.Authentication;
+using Microsoft.Kiota.Authentication.Azure;
+using Microsoft.Kiota.Http.HttpClientLibrary;
+
 namespace Microsoft.Graph
 {
     using System;
@@ -13,10 +19,11 @@ namespace Microsoft.Graph
     /// <summary>
     /// A default <see cref="IBaseClient"/> implementation.
     /// </summary>
-    public class BaseClient : IBaseClient
+    public class BaseClient
     {
-        private string baseUrl;
-        
+        private string PathSegment { get; set; }
+        public IRequestAdapter RequestAdapter { get; set; }
+
         /// <summary>
         /// Constructs a new <see cref="BaseClient"/>.
         /// </summary>
@@ -25,12 +32,9 @@ namespace Microsoft.Graph
         /// <param name="httpProvider">The <see cref="IHttpProvider"/> for sending requests.</param>
         public BaseClient(
             string baseUrl,
-            IAuthenticationProvider authenticationProvider,
-            IHttpProvider httpProvider = null)
+            IAuthenticationProvider authenticationProvider)
         {
-            this.BaseUrl = baseUrl;
-            this.AuthenticationProvider = authenticationProvider;
-            this.HttpProvider = httpProvider ?? new HttpProvider(new Serializer());
+            this.PathSegment = baseUrl;
         }
 
         /// <summary>
@@ -43,13 +47,9 @@ namespace Microsoft.Graph
         public BaseClient(
             string baseUrl,
             TokenCredential tokenCredential,
-            IEnumerable<string> scopes = null,
-            IHttpProvider httpProvider = null
-            )
+            IEnumerable<string> scopes = null)
         {
-            this.BaseUrl = baseUrl;
-            this.AuthenticationProvider = new TokenCredentialAuthProvider(tokenCredential, scopes );
-            this.HttpProvider = httpProvider ?? new HttpProvider(new Serializer());
+            this.PathSegment = baseUrl;
         }
 
         /// <summary>
@@ -61,55 +61,17 @@ namespace Microsoft.Graph
             string baseUrl,
             HttpClient httpClient)
         {
-            this.BaseUrl = baseUrl;
-            this.HttpProvider = new SimpleHttpProvider(httpClient);
+            this.PathSegment = baseUrl;
         }
 
         /// <summary>
-        /// Gets the <see cref="IAuthenticationProvider"/> for authenticating requests.
+        /// Gets the <see cref="BatchRequestBuilder"/> for building batch Requests
         /// </summary>
-        public IAuthenticationProvider AuthenticationProvider { get; set; }
-
-        /// <summary>
-        /// Gets or sets the base URL for requests of the client.
-        /// </summary>
-        public string BaseUrl
-        {
-            get { return this.baseUrl; }
-            set
-            {
-                if (string.IsNullOrEmpty(value))
-                {
-                    throw new ServiceException(
-                        new Error
-                        {
-                            Code = ErrorConstants.Codes.InvalidRequest,
-                            Message = ErrorConstants.Messages.BaseUrlMissing,
-                        });
-                }
-
-                this.baseUrl = value.TrimEnd('/');
-            }
-        }
-
-        /// <summary>
-        /// Gets the <see cref="IHttpProvider"/> for sending HTTP requests.
-        /// </summary>
-        public IHttpProvider HttpProvider { get; private set; }
-
-        /// <summary>
-        /// Gets or Sets the <see cref="IAuthenticationProvider"/> for authenticating a single HTTP requests. 
-        /// </summary>
-        public Func<IAuthenticationProvider> PerRequestAuthProvider { get; set; }
-
-        /// <summary>
-        /// Gets the <see cref="IBatchRequestBuilder"/> for building batch Requests
-        /// </summary>
-        public IBatchRequestBuilder Batch
+        public BatchRequestBuilder Batch
         {
             get
             {
-                return new BatchRequestBuilder(this.BaseUrl + "/$batch", this);
+                return new BatchRequestBuilder(this.PathSegment + "/$batch", RequestAdapter);
             }
         }
     }

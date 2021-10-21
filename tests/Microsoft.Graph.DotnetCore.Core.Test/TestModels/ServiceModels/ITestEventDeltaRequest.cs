@@ -10,7 +10,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.TestModels.ServiceModels
     /// <summary>
     /// The type ITestEventDeltaRequest.
     /// </summary>
-    public interface ITestEventDeltaRequest : IBaseRequest
+    public interface ITestEventDeltaRequest 
     {
         /// <summary>
         /// Adds the specified Event to the collection via POST.

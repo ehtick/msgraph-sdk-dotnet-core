@@ -2,6 +2,8 @@
 //  Copyright (c) Microsoft Corporation.  All Rights Reserved.  Licensed under the MIT License.  See License in the project root for license information.
 // ------------------------------------------------------------------------------
 
+using Microsoft.Kiota.Abstractions;
+
 namespace Microsoft.Graph
 {
     using System.Collections.Generic;
@@ -37,7 +39,7 @@ namespace Microsoft.Graph
         /// <typeparam name="T">The type to return</typeparam>
         /// <param name="response">The HttpResponseMessage to handle</param>
         /// <returns></returns>
-        public async Task<T> HandleResponse<T>(HttpResponseMessage response)
+        public async Task<T> HandleResponseAsync<T>(HttpResponseMessage response)
         {
             if (response.Content != null)
             {
@@ -255,6 +257,14 @@ namespace Microsoft.Graph
 
                 return Encoding.UTF8.GetString(memoryStream.ToArray());
             }
+        }
+
+        public Task<ModelType> HandleResponseAsync<NativeResponseType, ModelType>(NativeResponseType response)
+        {
+            if(response is HttpResponseMessage responseMessage)
+                return HandleResponseAsync<HttpResponseMessage, ModelType>(responseMessage);
+
+            return default;
         }
     }
 }

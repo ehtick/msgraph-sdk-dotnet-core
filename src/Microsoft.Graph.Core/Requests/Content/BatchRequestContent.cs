@@ -2,6 +2,8 @@
 //  Copyright (c) Microsoft Corporation.  All Rights Reserved.  Licensed under the MIT License.  See License in the project root for license information.
 // ------------------------------------------------------------------------------
 
+using Microsoft.Kiota.Abstractions;
+
 namespace Microsoft.Graph
 {
     using System;
@@ -132,7 +134,7 @@ namespace Microsoft.Graph
         /// </summary>
         /// <param name="request">A <see cref="BaseRequest"/> to use to build a <see cref="BatchRequestStep"/> to add.</param>
         /// <returns>The requestId of the  newly created <see cref="BatchRequestStep"/></returns>
-        public string AddBatchRequestStep(IBaseRequest request)
+        public string AddBatchRequestStep(RequestInformation request)
         {
             if (BatchRequestSteps.Count >= CoreConstants.BatchRequest.MaxNumberOfRequests)
                 throw new ClientException(new Error
@@ -142,8 +144,9 @@ namespace Microsoft.Graph
                 });
 
             string requestId = Guid.NewGuid().ToString();
-            BatchRequestStep batchRequestStep = new BatchRequestStep(requestId, request.GetHttpRequestMessage());
-            (BatchRequestSteps as IDictionary<string, BatchRequestStep>).Add(batchRequestStep.RequestId, batchRequestStep);
+            // TODO make GetRequestMessageFromRequestInformation public in kiota core
+            // BatchRequestStep batchRequestStep = new BatchRequestStep(requestId, request.GetHttpRequestMessage());
+            // (BatchRequestSteps as IDictionary<string, BatchRequestStep>).Add(batchRequestStep.RequestId, batchRequestStep);
             return requestId;
         }
 
