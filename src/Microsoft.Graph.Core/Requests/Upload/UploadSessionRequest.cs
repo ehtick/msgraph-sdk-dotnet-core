@@ -7,32 +7,36 @@ namespace Microsoft.Graph
     using Microsoft.Graph.Core.Models;
     using System.Threading;
     using System.Threading.Tasks;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Microsoft.Kiota.Abstractions;
 
     /// <summary>
     /// The UploadSessionRequest class
     /// </summary>
-    internal class UploadSessionRequest : BaseRequest
+    internal class UploadSessionRequest
     {
-        private readonly UploadResponseHandler responseHandler;
+
+        /// <summary>
+        /// The sessionUrl for the upload
+        /// </summary>
+        public string SessionUrl { get; private set; }
+
+        /// <summary>
+        /// The <see cref="IRequestAdapter"/> to use for the upload
+        /// </summary>
+        public IRequestAdapter RequestAdapter { get; private set; }
 
         /// <summary>
         /// Create a new UploadSessionRequest
         /// </summary>
         /// <param name="session">The IUploadSession to use in the request.</param>
-        /// <param name="client">The <see cref="IBaseClient"/> for handling requests.</param>
-        public UploadSessionRequest(IUploadSession session, IBaseClient client)
-            : base(session.UploadUrl, client, null)
+        /// <param name="requestAdapter">The <see cref="IRequestAdapter"/> for handling requests.</param>
+        public UploadSessionRequest(IUploadSession session, IRequestAdapter requestAdapter)
         {
-            this.responseHandler = new UploadResponseHandler();
-        }
-
-        /// <summary>
-        /// Deletes the specified Session
-        /// </summary>
-        /// <returns>The task to await.</returns>
-        public Task DeleteAsync()
-        {
-            return this.DeleteAsync(CancellationToken.None);
+            this.RequestAdapter = requestAdapter;
+            this.SessionUrl = session.UploadUrl;
         }
 
         /// <summary>
@@ -40,21 +44,10 @@ namespace Microsoft.Graph
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> for the request.</param>
         /// <returns>The task to await.</returns>
-        public async Task DeleteAsync(CancellationToken cancellationToken)
+        public async Task DeleteAsync(CancellationToken cancellationToken = default)
         {
-            this.Method = HttpMethods.DELETE;
-            using (var response = await this.SendRequestAsync(null, cancellationToken).ConfigureAwait(false))
-            {
-            }
-        }
-
-        /// <summary>
-        /// Gets the specified UploadSession.
-        /// </summary>
-        /// <returns>The Item.</returns>
-        public Task<IUploadSession> GetAsync()
-        {
-            return this.GetAsync(CancellationToken.None);
+            var requestInfo = CreateDeleteRequestInformation();
+            await RequestAdapter.SendNoContentAsync(requestInfo);
         }
 
         /// <summary>
@@ -62,15 +55,46 @@ namespace Microsoft.Graph
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> for the request.</param>
         /// <returns>The Item.</returns>
-        public async Task<IUploadSession> GetAsync(CancellationToken cancellationToken)
+        public async Task<IUploadSession> GetAsync(CancellationToken cancellationToken = default)
         {
-            this.Method = HttpMethods.GET;
+            var requestInfo = CreateGetRequestInformation();
+            return await RequestAdapter.SendPrimitiveAsync<UploadSession>(requestInfo);//TODO add response handler
+        }
 
-            using (var response = await this.SendRequestAsync(null, cancellationToken).ConfigureAwait(false))
+        /// <summary>
+        /// Create a <see cref="RequestInformation"/> for the GET request
+        /// <param name="h">Request headers</param>
+        /// <param name="o">Request options</param>
+        /// </summary>
+        public RequestInformation CreateGetRequestInformation(Action<IDictionary<string, string>> h = default, IEnumerable<IRequestOption> o = default)
+        {
+            var requestInfo = new RequestInformation
             {
-                var uploadResult = await this.responseHandler.HandleResponse<UploadSession>(response);
-                return uploadResult.UploadSession;
-            }
+                HttpMethod = HttpMethod.GET,
+                UrlTemplate = this.SessionUrl,
+                PathParameters = new Dictionary<string, object>(),
+            };
+            h?.Invoke(requestInfo.Headers);
+            requestInfo.AddRequestOptions(o?.ToArray());
+            return requestInfo;
+        }
+
+        /// <summary>
+        /// Create a <see cref="RequestInformation"/> for the DELETE request
+        /// <param name="h">Request headers</param>
+        /// <param name="o">Request options</param>
+        /// </summary>
+        public RequestInformation CreateDeleteRequestInformation(Action<IDictionary<string, string>> h = default, IEnumerable<IRequestOption> o = default)
+        {
+            var requestInfo = new RequestInformation
+            {
+                HttpMethod = HttpMethod.GET,
+                UrlTemplate = this.SessionUrl,
+                PathParameters = new Dictionary<string, object>(),
+            };
+            h?.Invoke(requestInfo.Headers);
+            requestInfo.AddRequestOptions(o?.ToArray());
+            return requestInfo;
         }
     }
 }

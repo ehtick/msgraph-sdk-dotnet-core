@@ -2,6 +2,8 @@
 //  Copyright (c) Microsoft Corporation.  All Rights Reserved.  Licensed under the MIT License.  See License in the project root for license information.
 // ------------------------------------------------------------------------------
 
+using Microsoft.Kiota.Abstractions;
+
 namespace Microsoft.Graph.DotnetCore.Core.Test.Tasks
 {
     using System;
@@ -210,7 +212,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Tasks
             }
 
             // This will be the same nextLink value as the one set in MockUserEventsCollectionPage constructor.
-            nextPage.InitializeNextPageRequest(baseClient, "https://graph.microsoft.com/v1.0/me/events?$skip=10");
+            nextPage.InitializeNextPageRequest(baseClient.RequestAdapter, "https://graph.microsoft.com/v1.0/me/events?$skip=10");
 
             // Create the delegate to process each entity returned in the pages. The delegate will 
             // signal that we reached an event in the next page.
@@ -302,7 +304,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Tasks
             // Create the delegate to configure the next page request. The delegate will signal that it was invoked.
             bool requestConfiguratorInvoked = false;
 
-            Func<IBaseRequest, IBaseRequest> requestConfigurator = (request) =>
+            Func<RequestInformation, RequestInformation> requestConfigurator = (request) =>
             {
                 requestConfiguratorInvoked = true;
                 return request;
@@ -320,10 +322,10 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Tasks
         private ITestEventDeltaCollectionPage SetupMocks(List<TestEvent> originalCollectionPageEvents, TestEventDeltaCollectionPage nextPage)
         {
             var mockUserEventsCollectionRequest = new Mock<ITestEventDeltaRequest>(MockBehavior.Strict);
-            mockUserEventsCollectionRequest.Setup(userEventsCollectionRequest => userEventsCollectionRequest.GetAsync(It.IsAny<CancellationToken>()))
-                .Returns((CancellationToken token) => Task.FromResult<ITestEventDeltaCollectionPage>(nextPage));
-            mockUserEventsCollectionRequest.Setup(userEventsCollectionRequest => userEventsCollectionRequest.GetHttpRequestMessage())
-                .Returns(() => new HttpRequestMessage(HttpMethod.Get, "https://graph.microsoft.com/v1.0/me/events?$skip=10"));
+            // mockUserEventsCollectionRequest.Setup(userEventsCollectionRequest => userEventsCollectionRequest.GetAsync(It.IsAny<CancellationToken>()))
+            //     .Returns((CancellationToken token) => Task.FromResult<ITestEventDeltaCollectionPage>(nextPage));
+            // mockUserEventsCollectionRequest.Setup(userEventsCollectionRequest => userEventsCollectionRequest.GetHttpRequestMessage())
+            //     .Returns(() => new HttpRequestMessage(HttpMethod.Get, "https://graph.microsoft.com/v1.0/me/events?$skip=10"));
 
             var mockUserEventsCollectionPage = new Mock<ITestEventDeltaCollectionPage>(MockBehavior.Strict);
             mockUserEventsCollectionPage.Setup(userEventsCollectionPage => userEventsCollectionPage.NextPageRequest)

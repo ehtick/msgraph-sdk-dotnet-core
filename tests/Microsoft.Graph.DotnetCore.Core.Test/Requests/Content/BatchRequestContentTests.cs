@@ -339,25 +339,25 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests.Content
             Assert.True(batchRequestContent.BatchRequestSteps.Count.Equals(CoreConstants.BatchRequest.MaxNumberOfRequests));
         }
 
-        [Fact]
-        public void BatchRequestContent_AddBatchRequestStepWithBaseRequest()
-        {
-            // Arrange
-            BaseClient client = new BaseClient(REQUEST_URL, new MockAuthenticationProvider().Object);
-            BaseRequest baseRequest = new BaseRequest(REQUEST_URL, client);
-            BatchRequestContent batchRequestContent = new BatchRequestContent();
-            Assert.False(batchRequestContent.BatchRequestSteps.Any());//Its empty
-
-            // Act
-            string batchRequestStepId = batchRequestContent.AddBatchRequestStep(baseRequest);
-
-            // Assert we added successfully and contents are as expected
-            Assert.NotNull(batchRequestStepId);
-            Assert.NotNull(batchRequestContent.BatchRequestSteps);
-            Assert.True(batchRequestContent.BatchRequestSteps.Count.Equals(1));
-            Assert.Equal(batchRequestContent.BatchRequestSteps.First().Value.Request.RequestUri.OriginalString, baseRequest.RequestUrl);
-            Assert.Equal(batchRequestContent.BatchRequestSteps.First().Value.Request.Method.Method, baseRequest.Method.ToString());
-        }
+        // [Fact]
+        // public void BatchRequestContent_AddBatchRequestStepWithBaseRequest()
+        // {
+        //     // Arrange
+        //     BaseClient client = new BaseClient(REQUEST_URL, new MockAuthenticationProvider().Object);
+        //     BaseRequest baseRequest = new BaseRequest(REQUEST_URL, client);
+        //     BatchRequestContent batchRequestContent = new BatchRequestContent();
+        //     Assert.False(batchRequestContent.BatchRequestSteps.Any());//Its empty
+        //
+        //     // Act
+        //     string batchRequestStepId = batchRequestContent.AddBatchRequestStep(baseRequest);
+        //
+        //     // Assert we added successfully and contents are as expected
+        //     Assert.NotNull(batchRequestStepId);
+        //     Assert.NotNull(batchRequestContent.BatchRequestSteps);
+        //     Assert.True(batchRequestContent.BatchRequestSteps.Count.Equals(1));
+        //     Assert.Equal(batchRequestContent.BatchRequestSteps.First().Value.Request.RequestUri.OriginalString, baseRequest.RequestUrl);
+        //     Assert.Equal(batchRequestContent.BatchRequestSteps.First().Value.Request.Method.Method, baseRequest.Method.ToString());
+        // }
 
         [Fact]
         public async Task BatchRequestContent_AddBatchRequestStepWithBaseRequestWithHeaderOptions()
@@ -394,31 +394,31 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests.Content
                                          "      }";
             Assert.Contains(expectedJsonSection, requestContentString);
         }
-
-        [Fact]
-        public void BatchRequestContent_AddBatchRequestStepWithBaseRequestToBatchRequestContentWithMaxSteps()
-        {
-            // Arrange
-            BatchRequestContent batchRequestContent = new BatchRequestContent();
-            BaseClient client = new BaseClient(REQUEST_URL, new MockAuthenticationProvider().Object);
-            // Add MaxNumberOfRequests number of steps
-            for (var i = 0; i < CoreConstants.BatchRequest.MaxNumberOfRequests; i++)
-            {
-                BaseRequest baseRequest = new BaseRequest(REQUEST_URL, client);
-                string batchRequestStepId = batchRequestContent.AddBatchRequestStep(baseRequest);
-                Assert.NotNull(batchRequestStepId);
-                Assert.True(batchRequestContent.BatchRequestSteps.Count.Equals(i + 1));//Assert we can add steps up to the max
-            }
-
-            // Act
-            BaseRequest extraBaseRequest = new BaseRequest(REQUEST_URL, client);
-            var exception = Assert.Throws<ClientException>(() => batchRequestContent.AddBatchRequestStep(extraBaseRequest));
-            
-            // Assert
-            Assert.Equal(ErrorConstants.Codes.MaximumValueExceeded, exception.Error.Code);
-            Assert.NotNull(batchRequestContent.BatchRequestSteps);
-            Assert.True(batchRequestContent.BatchRequestSteps.Count.Equals(CoreConstants.BatchRequest.MaxNumberOfRequests));
-        }
+        //
+        // [Fact]
+        // public void BatchRequestContent_AddBatchRequestStepWithBaseRequestToBatchRequestContentWithMaxSteps()
+        // {
+        //     // Arrange
+        //     BatchRequestContent batchRequestContent = new BatchRequestContent();
+        //     BaseClient client = new BaseClient(REQUEST_URL, new MockAuthenticationProvider().Object);
+        //     // Add MaxNumberOfRequests number of steps
+        //     for (var i = 0; i < CoreConstants.BatchRequest.MaxNumberOfRequests; i++)
+        //     {
+        //         BaseRequest baseRequest = new BaseRequest(REQUEST_URL, client);
+        //         string batchRequestStepId = batchRequestContent.AddBatchRequestStep(baseRequest);
+        //         Assert.NotNull(batchRequestStepId);
+        //         Assert.True(batchRequestContent.BatchRequestSteps.Count.Equals(i + 1));//Assert we can add steps up to the max
+        //     }
+        //
+        //     // Act
+        //     BaseRequest extraBaseRequest = new BaseRequest(REQUEST_URL, client);
+        //     var exception = Assert.Throws<ClientException>(() => batchRequestContent.AddBatchRequestStep(extraBaseRequest));
+        //     
+        //     // Assert
+        //     Assert.Equal(ErrorConstants.Codes.MaximumValueExceeded, exception.Error.Code);
+        //     Assert.NotNull(batchRequestContent.BatchRequestSteps);
+        //     Assert.True(batchRequestContent.BatchRequestSteps.Count.Equals(CoreConstants.BatchRequest.MaxNumberOfRequests));
+        // }
 
         [Theory]
         [InlineData("https://graph.microsoft.com/v1.0/me", "/me")]

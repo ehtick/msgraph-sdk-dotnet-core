@@ -18,7 +18,7 @@ namespace Microsoft.Graph
         private const int DefaultMaxSliceSize = 5 * 1024 * 1024;
         private const int RequiredSliceSizeIncrement = 320 * 1024;
         private IUploadSession Session { get; set; }
-        private readonly IBaseClient _client;
+        private readonly BaseClient _client;
         private readonly Stream _uploadStream;
         private readonly int _maxSliceSize;
         private List<Tuple<long, long>> _rangesRemaining;
@@ -31,9 +31,9 @@ namespace Microsoft.Graph
         /// <param name="uploadSession">Session information of type <see cref="IUploadSession"/>></param>
         /// <param name="uploadStream">Readable, seekable stream to be uploaded. Length of session is determined via uploadStream.Length</param>
         /// <param name="maxSliceSize">Max size of each slice to be uploaded. Multiple of 320 KiB (320 * 1024) is required.</param>
-        /// <param name="baseClient"><see cref="IBaseClient"/> to use for making upload requests. The client should not set Auth headers as upload urls do not need them.
+        /// <param name="baseClient"><see cref="BaseClient"/> to use for making upload requests. The client should not set Auth headers as upload urls do not need them.
         /// If less than 0, default value of 5 MiB is used. .</param>
-        public LargeFileUploadTask(IUploadSession uploadSession, Stream uploadStream,  int maxSliceSize = -1, IBaseClient baseClient = null)
+        public LargeFileUploadTask(IUploadSession uploadSession, Stream uploadStream,  int maxSliceSize = -1, BaseClient baseClient = null)
         {
             if (!uploadStream.CanRead || !uploadStream.CanSeek)
             {
@@ -41,7 +41,7 @@ namespace Microsoft.Graph
             }
 
             this.Session = uploadSession;
-            this._client = baseClient ?? this.InitializeClient(uploadSession.UploadUrl);
+            this._client = baseClient ?? InitializeClient(uploadSession.UploadUrl);
             this._uploadStream = uploadStream;
             this._rangesRemaining = this.GetRangesRemaining(uploadSession);
             this._maxSliceSize = maxSliceSize < 0 ? DefaultMaxSliceSize : maxSliceSize;
@@ -56,9 +56,9 @@ namespace Microsoft.Graph
         /// </summary>
         /// <param name="uploadUrl">Url to perform the upload to from the session</param>
         /// <returns></returns>
-        private IBaseClient InitializeClient(string uploadUrl)
+        private static BaseClient InitializeClient(string uploadUrl)
         {
-            HttpClient httpClient = GraphClientFactory.Create(authenticationProvider: null); //no auth
+            HttpClient httpClient = GraphClientFactory.Create(); //no auth
             httpClient.SetFeatureFlag(FeatureFlag.FileUploadTask);
             return new BaseClient(uploadUrl, httpClient);
         }
@@ -125,7 +125,7 @@ namespace Microsoft.Graph
                     var nextSliceSize = NextSliceSize(currentRangeBegins, item2);
                     var uploadRequest = new UploadSliceRequest<T>(
                         this.Session.UploadUrl,
-                        this._client,
+                        this._client.RequestAdapter,
                         currentRangeBegins,
                         currentRangeBegins + nextSliceSize - 1,
                         this.TotalUploadLength);
@@ -206,7 +206,7 @@ namespace Microsoft.Graph
         /// <returns><see cref="IUploadSession"/>> returned by the server.</returns>
         public async Task<IUploadSession> UpdateSessionStatusAsync()
         {
-            var request = new UploadSessionRequest(this.Session, this._client);
+            var request = new UploadSessionRequest(this.Session, this._client.RequestAdapter);
             var newSession = await request.GetAsync().ConfigureAwait(false);
 
             var newRangesRemaining = this.GetRangesRemaining(newSession);
@@ -234,7 +234,7 @@ namespace Microsoft.Graph
                         Message = ErrorConstants.Messages.ExpiredUploadSession
                     });
             }
-            var request = new UploadSessionRequest(this.Session, this._client);
+            var request = new UploadSessionRequest(this.Session, this._client.RequestAdapter);
             await request.DeleteAsync().ConfigureAwait(false);
         }
 

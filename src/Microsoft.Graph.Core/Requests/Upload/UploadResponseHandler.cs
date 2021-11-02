@@ -4,6 +4,7 @@
 
 namespace Microsoft.Graph
 {
+    using Microsoft.Kiota.Abstractions;
     using Microsoft.Graph.Core.Models;
     using System.IO;
     using System.Net;
@@ -14,12 +15,12 @@ namespace Microsoft.Graph
     /// <summary>
     /// The ResponseHandler for upload requests
     /// </summary>
-    internal class UploadResponseHandler
+    internal class UploadResponseHandler : IResponseHandler
     {
         private readonly ISerializer _serializer;
 
         /// <summary>
-        /// Constructs a new <see cref="ResponseHandler"/>.
+        /// Constructs a new <see cref="IResponseHandler"/>.
         /// </summary>
         /// <param name="serializer"></param>
         public UploadResponseHandler(ISerializer serializer = null)
@@ -110,6 +111,25 @@ namespace Microsoft.Graph
                         exception);
                 }
             }
+        }
+
+        /// <summary>
+        /// Handle the delta response to return the desired model
+        /// </summary>
+        /// <typeparam name="TNativeResponseType">The type of the response to be handled</typeparam>
+        /// <typeparam name="TModelType">The type to be returned from handling of the response</typeparam>
+        /// <param name="response">The response to handle</param>
+        /// <returns>An instance of the desired type</returns>
+        public Task<TModelType> HandleResponseAsync<TNativeResponseType, TModelType>(TNativeResponseType response)
+        {
+            if (response is HttpResponseMessage responseMessage)
+            {
+                //TODO fixme!!!
+                // var responseObject = await HandleResponse(responseMessage);
+                // return responseObject;
+            }
+
+            return default;
         }
     }
 }

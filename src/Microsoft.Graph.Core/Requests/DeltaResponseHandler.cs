@@ -1,4 +1,4 @@
-﻿// ------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 //  Copyright (c) Microsoft Corporation.  All Rights Reserved.  Licensed under the MIT License.  See License in the project root for license information.
 // ------------------------------------------------------------------------------
 
@@ -11,6 +11,7 @@ namespace Microsoft.Graph
     using System.Text.Json;
     using System.IO;
     using System.Text;
+    using Microsoft.Kiota.Abstractions;
 
     /// <summary>
     /// PREVIEW 
@@ -24,7 +25,7 @@ namespace Microsoft.Graph
         private readonly ISerializer serializer;
 
         /// <summary>
-        /// Constructs a new <see cref="ResponseHandler"/>.
+        /// Constructs a new <see cref="IResponseHandler"/> for delta responses.
         /// </summary>
         public DeltaResponseHandler()
         {
@@ -37,7 +38,7 @@ namespace Microsoft.Graph
         /// <typeparam name="T">The type to return</typeparam>
         /// <param name="response">The HttpResponseMessage to handle</param>
         /// <returns></returns>
-        public async Task<T> HandleResponse<T>(HttpResponseMessage response)
+        public async Task<T> HandleResponseAsync<T>(HttpResponseMessage response)
         {
             if (response.Content != null)
             {
@@ -255,6 +256,21 @@ namespace Microsoft.Graph
 
                 return Encoding.UTF8.GetString(memoryStream.ToArray());
             }
+        }
+
+        /// <summary>
+        /// Handle the delta response to return the desired model
+        /// </summary>
+        /// <typeparam name="TNativeResponseType">The type of the response to be handled</typeparam>
+        /// <typeparam name="TModelType">The type to be returned from handling of the response</typeparam>
+        /// <param name="response">The response to handle</param>
+        /// <returns>An instance of the desired type</returns>
+        public Task<TModelType> HandleResponseAsync<TNativeResponseType, TModelType>(TNativeResponseType response)
+        {
+            if(response is HttpResponseMessage responseMessage)
+                return HandleResponseAsync<HttpResponseMessage, TModelType>(responseMessage);
+
+            return default;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// ------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 //  Copyright (c) Microsoft Corporation.  All Rights Reserved.  Licensed under the MIT License.  See License in the project root for license information.
 // ------------------------------------------------------------------------------
 
@@ -6,6 +6,7 @@ namespace Microsoft.Graph
 {
     using System.Collections.Generic;
     using System.Threading;
+    using Microsoft.Kiota.Abstractions;
 
     /// <summary>
     /// The graph request context class
@@ -20,8 +21,8 @@ namespace Microsoft.Graph
         /// <summary>
         /// A MiddlewareOptions property
         /// </summary>
-        public IDictionary<string, IMiddlewareOption> MiddlewareOptions {
-            get => _middlewareOptions ?? (_middlewareOptions = new Dictionary<string, IMiddlewareOption>());
+        public IDictionary<string, IRequestOption> MiddlewareOptions {
+            get => _middlewareOptions ??= new Dictionary<string, IRequestOption>();
             set => _middlewareOptions = value;
         }
 
@@ -35,11 +36,6 @@ namespace Microsoft.Graph
         /// </summary>
         public FeatureFlag FeatureUsage { get; set; }
 
-        /// <summary>
-        /// A <see cref="GraphUserAccount"/> property representing the logged in user
-        /// </summary>
-        public GraphUserAccount User { get; set; }
-
-        private IDictionary<string, IMiddlewareOption> _middlewareOptions;
+        private IDictionary<string, IRequestOption> _middlewareOptions;
     }
 }
