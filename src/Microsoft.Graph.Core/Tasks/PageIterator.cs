@@ -22,7 +22,7 @@ namespace Microsoft.Graph
     /// <typeparam name="TEntity">The Microsoft Graph entity type returned in the result set.</typeparam>
     public class PageIterator<TEntity>
     {
-        private IRequestAdapter _client;
+        private BaseClient _client;
         private ICollectionPage<TEntity> _currentPage;
         private Queue<TEntity> _pageItemQueue;
         private Func<TEntity, bool> _processPageItemCallback;
@@ -49,7 +49,7 @@ namespace Microsoft.Graph
         /// <param name="callback">A Func delegate that processes type TEntity in the result set and should return false if the iterator should cancel processing.</param>
         /// <param name="requestConfigurator">A Func delegate that configures the NextPageRequest</param>
         /// <returns>A PageIterator&lt;TEntity&gt; that will process additional result pages based on the rules specified in Func&lt;TEntity,bool&gt; processPageItems</returns>
-        public static PageIterator<TEntity> CreatePageIterator(IRequestAdapter client, ICollectionPage<TEntity> page, Func<TEntity, bool> callback, Func<RequestInformation, RequestInformation> requestConfigurator = null)
+        public static PageIterator<TEntity> CreatePageIterator(BaseClient client, ICollectionPage<TEntity> page, Func<TEntity, bool> callback, Func<RequestInformation, RequestInformation> requestConfigurator = null)
         {
             if (client == null)
                 throw new ArgumentNullException(nameof(client));

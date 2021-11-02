@@ -15,7 +15,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
 
         protected MockAuthenticationProvider authenticationProvider;
         protected HttpResponseMessage httpResponseMessage;
-        protected IRequestAdapter requestAdapter;
+        protected BaseClient baseClient;
         protected MockSerializer serializer;
 
         public RequestTestBase()
@@ -24,9 +24,9 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
             this.serializer = new MockSerializer();
             this.httpResponseMessage = new HttpResponseMessage();
 
-            this.requestAdapter = new BaseClient(
+            this.baseClient = new BaseClient(
                 this.baseUrl,
-                this.authenticationProvider.Object).RequestAdapter;
+                this.authenticationProvider.Object);
         }
 
         public void Dispose()

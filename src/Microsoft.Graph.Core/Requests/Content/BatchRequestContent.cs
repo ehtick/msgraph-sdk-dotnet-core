@@ -128,13 +128,13 @@ namespace Microsoft.Graph
             (BatchRequestSteps as IDictionary<string, BatchRequestStep>).Add(batchRequestStep.RequestId, batchRequestStep);
             return requestId;
         }
-
+        private const string ContentTypeHeaderName = "content-type";
         /// <summary>
         /// Adds a <see cref="RequestInformation"/> to batch request content
         /// </summary>
-        /// <param name="request">A <see cref="RequestInformation"/> to use to build a <see cref="BatchRequestStep"/> to add.</param>
+        /// <param name="requestInfo">A <see cref="RequestInformation"/> to use to build a <see cref="BatchRequestStep"/> to add.</param>
         /// <returns>The requestId of the  newly created <see cref="BatchRequestStep"/></returns>
-        public string AddBatchRequestStep(RequestInformation request)
+        public string AddBatchRequestStep(RequestInformation requestInfo)
         {
             if (BatchRequestSteps.Count >= CoreConstants.BatchRequest.MaxNumberOfRequests)
                 throw new ClientException(new Error
@@ -145,8 +145,24 @@ namespace Microsoft.Graph
 
             string requestId = Guid.NewGuid().ToString();
             // TODO make GetRequestMessageFromRequestInformation public in kiota core
-            // BatchRequestStep batchRequestStep = new BatchRequestStep(requestId, request.GetHttpRequestMessage());
-            // (BatchRequestSteps as IDictionary<string, BatchRequestStep>).Add(batchRequestStep.RequestId, batchRequestStep);
+            var message = new HttpRequestMessage
+            {
+                Method = new System.Net.Http.HttpMethod(requestInfo.HttpMethod.ToString().ToUpperInvariant()),
+                RequestUri = requestInfo.URI,
+            };
+
+            if (requestInfo.RequestOptions.Any())
+                requestInfo.RequestOptions.ToList().ForEach(x => message.Options.Set(new HttpRequestOptionsKey<IRequestOption>(x.GetType().FullName), x));
+            if (requestInfo.Headers?.Any() ?? false)
+                requestInfo.Headers.Where(x => !ContentTypeHeaderName.Equals(x.Key, StringComparison.OrdinalIgnoreCase)).ToList().ForEach(x => message.Headers.Add(x.Key, x.Value));
+            if (requestInfo.Content != null)
+            {
+                message.Content = new StreamContent(requestInfo.Content);
+                if (requestInfo?.Headers?.ContainsKey(ContentTypeHeaderName) ?? false)
+                    message.Content.Headers.ContentType = new MediaTypeHeaderValue(requestInfo.Headers[ContentTypeHeaderName]);
+            }
+            BatchRequestStep batchRequestStep = new BatchRequestStep(requestId, message);
+            (BatchRequestSteps as IDictionary<string, BatchRequestStep>).Add(batchRequestStep.RequestId, batchRequestStep);
             return requestId;
         }
 
