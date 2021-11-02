@@ -12,13 +12,16 @@ namespace Microsoft.Graph
     using Microsoft.Graph.Core.Models;
     using System.Threading;
     using System.Threading.Tasks;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Microsoft.Kiota.Abstractions;
 
     /// <summary>
     /// The UploadSessionRequest class
     /// </summary>
     internal class UploadSessionRequest
     {
-        private readonly UploadResponseHandler responseHandler;
 
         /// <summary>
         /// The sessionUrl for the upload
@@ -37,7 +40,6 @@ namespace Microsoft.Graph
         /// <param name="requestAdapter">The <see cref="IRequestAdapter"/> for handling requests.</param>
         public UploadSessionRequest(IUploadSession session, IRequestAdapter requestAdapter)
         {
-            this.responseHandler = new UploadResponseHandler();
             this.RequestAdapter = requestAdapter;
             this.SessionUrl = session.UploadUrl;
         }
@@ -61,7 +63,7 @@ namespace Microsoft.Graph
         public async Task<IUploadSession> GetAsync(CancellationToken cancellationToken = default)
         {
             var requestInfo = CreateGetRequestInformation();
-            return await RequestAdapter.SendPrimitiveAsync<UploadSession>(requestInfo, this.responseHandler);
+            return await RequestAdapter.SendPrimitiveAsync<UploadSession>(requestInfo);//TODO add response handler
         }
 
         /// <summary>

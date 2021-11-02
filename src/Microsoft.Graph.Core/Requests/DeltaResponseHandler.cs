@@ -1,4 +1,4 @@
-﻿// ------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 //  Copyright (c) Microsoft Corporation.  All Rights Reserved.  Licensed under the MIT License.  See License in the project root for license information.
 // ------------------------------------------------------------------------------
 
@@ -13,6 +13,7 @@ namespace Microsoft.Graph
     using System.Text.Json;
     using System.IO;
     using System.Text;
+    using Microsoft.Kiota.Abstractions;
 
     /// <summary>
     /// PREVIEW 

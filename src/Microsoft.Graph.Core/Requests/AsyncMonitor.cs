@@ -12,6 +12,8 @@ namespace Microsoft.Graph
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
+    using System.Text.Json;
+    using Microsoft.Kiota.Abstractions;
 
     /// <summary>
     /// Monitor for async operations to the Graph service on the client.

@@ -6,6 +6,7 @@ using Microsoft.Kiota.Abstractions;
 
 namespace Microsoft.Graph
 {
+    using Microsoft.Kiota.Abstractions;
     using System;
     using System.Collections.Generic;
     using System.IO;

@@ -1,4 +1,4 @@
-﻿// ------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 //  Copyright (c) Microsoft Corporation.  All Rights Reserved.  Licensed under the MIT License.  See License in the project root for license information.
 // ------------------------------------------------------------------------------
 
@@ -9,6 +9,10 @@ using Microsoft.Kiota.Abstractions;
 
 namespace Microsoft.Graph.Core.Requests
 {
+    using System;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using Microsoft.Kiota.Abstractions;
     using System.Collections.Generic;
 
     /// <summary>

@@ -10,10 +10,11 @@ namespace Microsoft.Graph
 {
     using System.Collections.Generic;
     using System.IO;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
     using System.Threading;
     using System.Threading.Tasks;
+    using System;
+    using System.Linq;
+    using Microsoft.Kiota.Abstractions;
 
     /// <summary>
     /// The UploadSliceRequest class to help with uploading file slices

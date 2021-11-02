@@ -6,6 +6,7 @@ using Microsoft.Kiota.Abstractions;
 
 namespace Microsoft.Graph
 {
+    using Microsoft.Kiota.Abstractions;
     using Microsoft.Graph.Core.Models;
     using System.IO;
     using System.Net;
@@ -124,7 +125,11 @@ namespace Microsoft.Graph
         public Task<TModelType> HandleResponseAsync<TNativeResponseType, TModelType>(TNativeResponseType response)
         {
             if (response is HttpResponseMessage responseMessage)
-                return HandleResponseAsync<HttpResponseMessage, TModelType>(responseMessage);
+            {
+                //TODO fixme!!!
+                // var responseObject = await HandleResponse(responseMessage);
+                // return responseObject;
+            }
 
             return default;
         }

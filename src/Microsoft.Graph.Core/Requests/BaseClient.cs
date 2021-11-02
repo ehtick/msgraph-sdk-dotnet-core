@@ -15,6 +15,11 @@ namespace Microsoft.Graph
     using Microsoft.Graph.Core.Requests;
     using System.Collections.Generic;
     using Azure.Core;
+    using System.Linq;
+    using Microsoft.Kiota.Abstractions;
+    using Microsoft.Kiota.Abstractions.Authentication;
+    using Microsoft.Kiota.Authentication.Azure;
+    using Microsoft.Kiota.Http.HttpClientLibrary;
 
     /// <summary>
     /// A default client implementation for microsoft graph
