@@ -17,11 +17,14 @@ namespace Microsoft.Graph
     using Azure.Core;
 
     /// <summary>
-    /// A default <see cref="IBaseClient"/> implementation.
+    /// A default client implementation for microsoft graph
     /// </summary>
     public class BaseClient
     {
         private string PathSegment { get; set; }
+        /// <summary>
+        /// The request adapter for making requests
+        /// </summary>
         public IRequestAdapter RequestAdapter { get; set; }
 
         /// <summary>
@@ -29,12 +32,12 @@ namespace Microsoft.Graph
         /// </summary>
         /// <param name="baseUrl">The base service URL. For example, "https://graph.microsoft.com/v1.0."</param>
         /// <param name="authenticationProvider">The <see cref="IAuthenticationProvider"/> for authenticating request messages.</param>
-        /// <param name="httpProvider">The <see cref="IHttpProvider"/> for sending requests.</param>
         public BaseClient(
             string baseUrl,
             IAuthenticationProvider authenticationProvider)
         {
             this.PathSegment = baseUrl;
+            this.RequestAdapter = new HttpClientRequestAdapter(authenticationProvider);
         }
 
         /// <summary>
@@ -43,13 +46,13 @@ namespace Microsoft.Graph
         /// <param name="baseUrl">The base service URL. For example, "https://graph.microsoft.com/v1.0."</param>
         /// <param name="tokenCredential">The <see cref="TokenCredential"/> for authenticating request messages.</param>
         /// <param name="scopes">List of scopes for the authentication context.</param>
-        /// <param name="httpProvider">The <see cref="IHttpProvider"/> for sending requests.</param>
         public BaseClient(
             string baseUrl,
             TokenCredential tokenCredential,
             IEnumerable<string> scopes = null)
         {
             this.PathSegment = baseUrl;
+            this.RequestAdapter = new HttpClientRequestAdapter(new AzureIdentityAuthenticationProvider(tokenCredential, scopes?.ToArray() ?? new []{ "https://graph.microsoft.com/.default" }));
         }
 
         /// <summary>
@@ -62,6 +65,7 @@ namespace Microsoft.Graph
             HttpClient httpClient)
         {
             this.PathSegment = baseUrl;
+            this.RequestAdapter = new HttpClientRequestAdapter(new AnonymousAuthenticationProvider(), httpClient: httpClient);
         }
 
         /// <summary>

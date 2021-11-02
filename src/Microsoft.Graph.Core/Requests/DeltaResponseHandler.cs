@@ -26,7 +26,7 @@ namespace Microsoft.Graph
         private readonly ISerializer serializer;
 
         /// <summary>
-        /// Constructs a new <see cref="ResponseHandler"/>.
+        /// Constructs a new <see cref="IResponseHandler"/> for delta responses.
         /// </summary>
         public DeltaResponseHandler()
         {
@@ -259,10 +259,17 @@ namespace Microsoft.Graph
             }
         }
 
-        public Task<ModelType> HandleResponseAsync<NativeResponseType, ModelType>(NativeResponseType response)
+        /// <summary>
+        /// Handle the delta response to return the desired model
+        /// </summary>
+        /// <typeparam name="TNativeResponseType">The type of the response to be handled</typeparam>
+        /// <typeparam name="TModelType">The type to be returned from handling of the response</typeparam>
+        /// <param name="response">The response to handle</param>
+        /// <returns>An instance of the desired type</returns>
+        public Task<TModelType> HandleResponseAsync<TNativeResponseType, TModelType>(TNativeResponseType response)
         {
             if(response is HttpResponseMessage responseMessage)
-                return HandleResponseAsync<HttpResponseMessage, ModelType>(responseMessage);
+                return HandleResponseAsync<HttpResponseMessage, TModelType>(responseMessage);
 
             return default;
         }

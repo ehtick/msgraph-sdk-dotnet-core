@@ -16,12 +16,7 @@ namespace Microsoft.Graph.Core.Requests
     /// </summary>
     public class BatchRequestBuilder
     {
-        /// <summary>Current path for the request</summary>
-        private string CurrentPath { get; set; }
-        /// <summary>Whether the current path is a raw URL</summary>
-        private bool IsRawUrl { get; set; }
-        /// <summary>Path segment to use to build the URL for the current request builder</summary>
-        private string PathSegment { get; set; }
+        private string UrlTemplate { get; set; }
         /// <summary>The http core service to use to execute the requests.</summary>
         private IRequestAdapter RequestAdapter { get; set; }
 
@@ -35,10 +30,8 @@ namespace Microsoft.Graph.Core.Requests
         {
             if (string.IsNullOrEmpty(currentPath)) throw new ArgumentNullException(nameof(currentPath));
             _ = requestAdapter ?? throw new ArgumentNullException(nameof(requestAdapter));
-            PathSegment = "/$batch";
+            UrlTemplate = "https://graph.microsoft.com/v1.0/$batch";
             RequestAdapter = requestAdapter;
-            CurrentPath = currentPath;
-            IsRawUrl = isRawUrl;
         }
 
         /// <summary>
@@ -52,14 +45,22 @@ namespace Microsoft.Graph.Core.Requests
             return await RequestAdapter.SendPrimitiveAsync<BatchResponseContent>(requestInfo); // TODO add responseHandler
         }
 
+        /// <summary>
+        /// Creates a <see cref="RequestInformation"/> for the batch request
+        /// </summary>
+        /// <param name="batchRequestContent"></param>
+        /// <param name="h"></param>
+        /// <param name="o"></param>
+        /// <returns></returns>
         public RequestInformation CreatePostRequestInformation(BatchRequestContent batchRequestContent, Action<IDictionary<string, string>> h = default, IEnumerable<IRequestOption> o = default)
         {
             _ = batchRequestContent ?? throw new ArgumentNullException(nameof(batchRequestContent));
             var requestInfo = new RequestInformation
             {
-                HttpMethod = HttpMethod.POST,
+                HttpMethod = HttpMethod.GET,
+                UrlTemplate = UrlTemplate,
+                PathParameters = new Dictionary<string, object>(),
             };
-            requestInfo.SetURI(CurrentPath, PathSegment, IsRawUrl);
             requestInfo.Headers.Add("Content-Type", "application/json");
             requestInfo.SetStreamContent(batchRequestContent.ReadAsStream());
             h?.Invoke(requestInfo.Headers);

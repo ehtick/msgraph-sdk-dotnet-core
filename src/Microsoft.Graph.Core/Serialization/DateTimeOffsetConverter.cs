@@ -46,20 +46,8 @@ namespace Microsoft.Graph
         /// <param name="options">The calling serializer options</param>
         public override void Write(Utf8JsonWriter writer, DateTimeOffset dateTimeOffsetValue, JsonSerializerOptions options)
         {
-            if (dateTimeOffsetValue != null)
-            {
-                // use the serializer's native implementation with ISO 8601-1:2019 format support(and also faster)
-                JsonSerializer.Serialize(writer, dateTimeOffsetValue, typeof(DateTimeOffset));
-            }
-            else
-            {
-                throw new ServiceException(
-                    new Error
-                    {
-                        Code = ErrorConstants.Codes.GeneralException,
-                        Message = ErrorConstants.Messages.InvalidTypeForDateTimeOffsetConverter,
-                    });
-            }
+            // use the serializer's native implementation with ISO 8601-1:2019 format support(and also faster)
+            JsonSerializer.Serialize(writer, dateTimeOffsetValue, typeof(DateTimeOffset));
         }
     }
     

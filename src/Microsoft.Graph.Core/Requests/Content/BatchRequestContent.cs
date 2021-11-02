@@ -130,9 +130,9 @@ namespace Microsoft.Graph
         }
 
         /// <summary>
-        /// Adds a <see cref="IBaseRequest"/> to batch request content
+        /// Adds a <see cref="RequestInformation"/> to batch request content
         /// </summary>
-        /// <param name="request">A <see cref="BaseRequest"/> to use to build a <see cref="BatchRequestStep"/> to add.</param>
+        /// <param name="request">A <see cref="RequestInformation"/> to use to build a <see cref="BatchRequestStep"/> to add.</param>
         /// <returns>The requestId of the  newly created <see cref="BatchRequestStep"/></returns>
         public string AddBatchRequestStep(RequestInformation request)
         {

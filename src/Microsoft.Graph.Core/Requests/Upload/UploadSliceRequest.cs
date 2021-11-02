@@ -2,6 +2,8 @@
 //  Copyright (c) Microsoft Corporation.  All Rights Reserved.  Licensed under the MIT License.  See License in the project root for license information.
 // ------------------------------------------------------------------------------
 
+using System;
+using System.Linq;
 using Microsoft.Kiota.Abstractions;
 
 namespace Microsoft.Graph
@@ -19,7 +21,17 @@ namespace Microsoft.Graph
     /// <typeparam name="T">The type to be uploaded</typeparam>
     internal class UploadSliceRequest<T>
     {
-        private UploadResponseHandler responseHandler;
+        private readonly UploadResponseHandler responseHandler;
+
+        /// <summary>
+        /// The sessionUrl for the upload
+        /// </summary>
+        public string SessionUrl { get; private set; }
+
+        /// <summary>
+        /// The <see cref="IRequestAdapter"/> to use for the upload
+        /// </summary>
+        public IRequestAdapter RequestAdapter { get; private set; }
 
         /// <summary>
         /// The beginning of the slice range to send.
@@ -45,18 +57,20 @@ namespace Microsoft.Graph
         /// Request for uploading one slice of a session
         /// </summary>
         /// <param name="sessionUrl">URL to upload the slice.</param>
-        /// <param name="client">Client used for sending the slice.</param>
+        /// <param name="requestAdapter">The <see cref="IRequestAdapter"/> used for sending the slice.</param>
         /// <param name="rangeBegin">Beginning of range of this slice</param>
         /// <param name="rangeEnd">End of range of this slice</param>
         /// <param name="totalSessionLength">Total session length. This MUST be consistent
         /// across all slice.</param>
         public UploadSliceRequest(
             string sessionUrl,
-            IRequestAdapter client,
+            IRequestAdapter requestAdapter,
             long rangeBegin,
             long rangeEnd,
             long totalSessionLength)
         {
+            this.SessionUrl = sessionUrl;
+            this.RequestAdapter = requestAdapter;
             this.RangeBegin = rangeBegin;
             this.RangeEnd = rangeEnd;
             this.TotalSessionLength = totalSessionLength;
@@ -83,37 +97,29 @@ namespace Microsoft.Graph
         /// is true, then the item has completed, and the value is the created item from the server.</returns>
         public virtual async Task<UploadResult<T>> PutAsync(Stream stream, CancellationToken cancellationToken)
         {
-            // this.Method = HttpMethods.PUT;
-            // this.ContentType = CoreConstants.MimeTypeNames.Application.Stream;
-            using (var response = await this.SendRequestAsync(stream, cancellationToken).ConfigureAwait(false))
-            {
-                return await this.responseHandler.HandleResponse<T>(response);
-            }
+            var requestInfo = CreatePutRequestInformation(stream);
+            return await RequestAdapter.SendPrimitiveAsync<UploadResult<T>>(requestInfo, new UploadResponseHandler());
         }
 
         /// <summary>
-        /// Send the Sliced Upload request
+        /// Read-only.
+        /// <param name="stream"></param>
+        /// <param name="h">Request headers</param>
+        /// <param name="o">Request options</param>
         /// </summary>
-        /// <param name="stream">Stream of data to be sent in the request.</param>
-        /// <param name="cancellationToken">The cancellation token</param>
-        /// <param name="completionOption">The completion option for the request. Defaults to ResponseContentRead.</param>
-        /// <returns></returns>
-        private async Task<HttpResponseMessage> SendRequestAsync(
-            Stream stream,
-            CancellationToken cancellationToken,
-            HttpCompletionOption completionOption = HttpCompletionOption.ResponseContentRead)
+        public RequestInformation CreatePutRequestInformation(Stream stream, Action<IDictionary<string, string>> h = default, IEnumerable<IRequestOption> o = default)
         {
-            // Append the relevant headers for the range upload request
-            // TODO rebuild this using request information
-            return default;
-            // using (var request = this.GetHttpRequestMessage())
-            // {
-            //     request.Content = new StreamContent(stream);
-            //     request.Content.Headers.ContentRange = new ContentRangeHeaderValue(this.RangeBegin, this.RangeEnd, this.TotalSessionLength);
-            //     request.Content.Headers.ContentLength = this.RangeLength;
-            //
-            //     return await this.Client.HttpProvider.SendAsync(request, completionOption, cancellationToken).ConfigureAwait(false);
-            // }
+            _ = stream ?? throw new ArgumentNullException(nameof(stream));
+            var requestInfo = new RequestInformation
+            {
+                HttpMethod = Kiota.Abstractions.HttpMethod.PUT,
+                UrlTemplate = this.SessionUrl,
+                PathParameters = new Dictionary<string, object>(),
+            };
+            requestInfo.SetStreamContent(stream);
+            h?.Invoke(requestInfo.Headers);
+            requestInfo.AddRequestOptions(o?.ToArray());
+            return requestInfo;
         }
     }
 }

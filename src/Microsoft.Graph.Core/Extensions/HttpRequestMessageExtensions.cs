@@ -63,46 +63,32 @@ namespace Microsoft.Graph
             var newRequest = new HttpRequestMessage(originalRequest.Method, originalRequest.RequestUri);
 
             // Copy request headers.
-            foreach (var header in originalRequest.Headers)
-                newRequest.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            foreach (var (key, value) in originalRequest.Headers)
+                newRequest.Headers.TryAddWithoutValidation(key, value);
 
             // Copy request properties.
-            foreach (var property in originalRequest.Properties)
-                newRequest.Properties.Add(property);
+            foreach (var (key, value) in originalRequest.Options)
+                newRequest.Options.TryAdd(key, value);
 
             // Set Content if previous request had one.
             if (originalRequest.Content != null)
             {
                 // HttpClient doesn't rewind streams and we have to explicitly do so.
-                await originalRequest.Content.ReadAsStreamAsync().ContinueWith(t => {
-                    if (t.Result.CanSeek)
-                        t.Result.Seek(0, SeekOrigin.Begin);
+                var contentStream = await originalRequest.Content.ReadAsStreamAsync();
 
-                    newRequest.Content = new StreamContent(t.Result);
-                });
+                if (contentStream.CanSeek)
+                    contentStream.Seek(0, SeekOrigin.Begin);
+
+                newRequest.Content = new StreamContent(contentStream);
 
                 // Copy content headers.
-                if (originalRequest.Content.Headers != null)
-                    foreach (var contentHeader in originalRequest.Content.Headers)
-                        newRequest.Content.Headers.TryAddWithoutValidation(contentHeader.Key, contentHeader.Value);
+                foreach (var (key, value) in originalRequest.Content.Headers)
+                {
+                    newRequest.Content?.Headers.TryAddWithoutValidation(key, value);
+                }
             }
 
             return newRequest;
-        }
-
-        /// <summary>
-        /// Gets a <see cref="GraphRequestContext"/> from <see cref="HttpRequestMessage"/>
-        /// </summary>
-        /// <param name="httpRequestMessage">The <see cref="HttpRequestMessage"/> representation of the request.</param>
-        /// <returns></returns>
-        public static GraphRequestContext GetRequestContext(this HttpRequestMessage httpRequestMessage)
-        {
-            GraphRequestContext requestContext = new GraphRequestContext();
-            if (httpRequestMessage.Properties.TryGetValue(nameof(GraphRequestContext), out var requestContextObject))
-            {
-                requestContext = (GraphRequestContext)requestContextObject;
-            }
-            return requestContext;
         }
     }
 }
