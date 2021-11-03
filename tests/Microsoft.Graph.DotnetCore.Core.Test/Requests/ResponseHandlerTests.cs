@@ -2,8 +2,6 @@
 //  Copyright (c) Microsoft Corporation.  All Rights Reserved.  Licensed under the MIT License.  See License in the project root for license information.
 // ------------------------------------------------------------------------------
 
-using Microsoft.Kiota.Abstractions;
-
 namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
 {
     using System.Collections.Generic;
@@ -13,6 +11,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
     using System.Threading.Tasks;
     using Xunit;
     using Microsoft.Graph;
+    using Microsoft.Kiota.Abstractions;
     using Microsoft.Graph.DotnetCore.Core.Test.TestModels.ServiceModels;
     using System.Linq;
     using System;

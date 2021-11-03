@@ -27,15 +27,15 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
             // Assert.Equal(expectedBaseUrl, baseClient.BaseUrl);
         }
 
-        // [Fact]
-        // public void BaseClient_InitializeBaseUrlWithTrailingSlash()
-        // {
-        //     var expectedBaseUrl = "https://localhost";
-        //
-        //     var baseClient = new BaseClient("https://localhost/", this.authenticationProvider.Object);
-        //
-        //     // Assert.Equal(expectedBaseUrl, baseClient.BaseUrl);// TODO verify if we need the base url property
-        // }
+        [Fact]
+        public void BaseClient_InitializeBaseUrlWithTrailingSlash()
+        {
+            var expectedBaseUrl = "https://localhost";
+        
+            var baseClient = new BaseClient("https://localhost/", this.authenticationProvider.Object);
+        
+            // Assert.Equal(expectedBaseUrl, baseClient.BaseUrl);// TODO verify if we need the base url property
+        }
 
         [Fact]
         public void BaseClient_InitializeEmptyBaseUrl()

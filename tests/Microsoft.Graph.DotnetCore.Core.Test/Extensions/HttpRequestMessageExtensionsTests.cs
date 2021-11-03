@@ -66,17 +66,6 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Extensions
             Assert.False(response, "Unexpected content type");
         }
 
-        // [Fact]
-        // public void GetRequestContext_ShouldReturnRequestContext()
-        // {
-        //     string requestUrl = "https://foo.bar";
-        //     var baseRequest = new BaseRequest(requestUrl, this.baseClient);
-        //
-        //     HttpRequestMessage httpRequestMessage = baseRequest.GetHttpRequestMessage();
-        //
-        //     Assert.NotNull(httpRequestMessage.GetRequestContext());
-        // }
-
         [Fact]
         public async Task CloneAsync_WithEmptyHttpContent()
         {

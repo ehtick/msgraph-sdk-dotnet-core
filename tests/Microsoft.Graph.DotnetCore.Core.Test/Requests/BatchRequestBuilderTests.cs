@@ -2,13 +2,12 @@
 //  Copyright (c) Microsoft Corporation.  All Rights Reserved.  Licensed under the MIT License.  See License in the project root for license information.
 // ------------------------------------------------------------------------------
 
-using Microsoft.Kiota.Abstractions;
-
 namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
 {
     using Moq;
     using Xunit;
     using Microsoft.Graph.Core.Requests;
+    using Microsoft.Kiota.Abstractions;
 
     public class BatchRequestBuilderTests
     {
