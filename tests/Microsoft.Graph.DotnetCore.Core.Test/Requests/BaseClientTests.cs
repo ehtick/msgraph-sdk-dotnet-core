@@ -30,7 +30,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
         [Fact]
         public void BaseClient_InitializeBaseUrlWithTrailingSlash()
         {
-            var expectedBaseUrl = "https://localhost";
+            //var expectedBaseUrl = "https://localhost";
         
             var baseClient = new BaseClient("https://localhost/", this.authenticationProvider.Object);
         

@@ -38,7 +38,7 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
 
                 // 2. Map the response
                 testHttpMessageHandler.AddResponseMapping(requestUrl, responseMessage);
-                // TODO fixme
+
                 // 3. Create a batch request object to be tested
                 BaseClient client = new BaseClient(requestUrl, authenticationProvider.Object);
                 UploadSliceRequest<TestDriveItem> uploadSliceRequest = new UploadSliceRequest<TestDriveItem>(requestUrl, client.RequestAdapter, 0, 200, 1000);

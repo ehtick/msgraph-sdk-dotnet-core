@@ -16,20 +16,19 @@ namespace Microsoft.Graph
         /// <summary>
         /// The GraphResponse Constructor
         /// </summary>
-        /// <param name="iBaseRequest">The Request made for the response</param>
+        /// <param name="requestInformation">The Request made for the response</param>
         /// <param name="httpResponseMessage">The response</param>
-        public GraphResponse(RequestInformation iBaseRequest, HttpResponseMessage httpResponseMessage)
-            : base(iBaseRequest, httpResponseMessage)
+        public GraphResponse(RequestInformation requestInformation, HttpResponseMessage httpResponseMessage)
+            : base(requestInformation, httpResponseMessage)
         {
         }
 
-        //TODO fixme
-        // /// <summary>
-        // /// Gets the deserialized object 
-        // /// </summary>
-        // public async Task<T> GetResponseObjectAsync()
-        // {
-        //     return await this.BaseRequest.ResponseHandler.HandleResponse<T>(this.ToHttpResponseMessage());
-        // }
+        /// <summary>
+        /// Gets the deserialized object 
+        /// </summary>
+        public async Task<T> GetResponseObjectAsync(IResponseHandler responseHandler)
+        {
+             return await responseHandler.HandleResponseAsync<HttpResponseMessage,T>(ToHttpResponseMessage());
+        }
     }
 }

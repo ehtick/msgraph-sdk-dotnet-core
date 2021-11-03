@@ -16,15 +16,14 @@ namespace Microsoft.Graph.DotnetCore.Core.Test.Requests
         {
             // Arrange
             var requestUrl = "https://localhost";
-            var client = new Mock<IRequestAdapter>().Object;
+            var requestAdapter = new Mock<IRequestAdapter>().Object;
 
             // Act
-            var batchRequestBuilder = new BatchRequestBuilder(requestUrl, client);
+            var batchRequestBuilder = new BatchRequestBuilder(requestUrl, requestAdapter);
 
-            // TODO fixme
-            // // Assert
-            // Assert.Equal(requestUrl, batchRequestBuilder.RequestUrl);
-            // Assert.Equal(client, batchRequestBuilder.Client);
+            // Assert
+            // Assert.Equal(requestUrl, batchRequestBuilder.RequestUrl); // TODO verify if we still need the baseUrl
+            Assert.Equal(requestAdapter, batchRequestBuilder.RequestAdapter);
         }
     }
 }

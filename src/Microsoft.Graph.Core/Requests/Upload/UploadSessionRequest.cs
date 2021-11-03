@@ -47,7 +47,7 @@ namespace Microsoft.Graph
         public async Task DeleteAsync(CancellationToken cancellationToken = default)
         {
             var requestInfo = CreateDeleteRequestInformation();
-            await RequestAdapter.SendNoContentAsync(requestInfo);
+            await RequestAdapter.SendNoContentAsync(requestInfo);//TODO add response handler
         }
 
         /// <summary>

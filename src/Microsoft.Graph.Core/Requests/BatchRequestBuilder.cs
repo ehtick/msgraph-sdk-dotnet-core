@@ -17,7 +17,7 @@ namespace Microsoft.Graph.Core.Requests
     {
         private string UrlTemplate { get; set; }
         /// <summary>The http core service to use to execute the requests.</summary>
-        private IRequestAdapter RequestAdapter { get; set; }
+        internal IRequestAdapter RequestAdapter { get; set; }
 
         /// <summary>
         /// Instantiates a new BatchRequestBuilder and sets the default values.
