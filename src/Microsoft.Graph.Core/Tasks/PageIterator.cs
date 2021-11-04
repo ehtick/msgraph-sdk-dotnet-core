@@ -2,8 +2,6 @@
 //  Copyright (c) Microsoft Corporation.  All Rights Reserved.  Licensed under the MIT License.  See License in the project root for license information.
 // ------------------------------------------------------------------------------
 
-using Microsoft.Kiota.Abstractions;
-
 namespace Microsoft.Graph
 {
     using System;
@@ -99,7 +97,7 @@ namespace Microsoft.Graph
             // There are more pages ready to be paged.
             if (page.NextPageRequest != null)
             {
-                Nextlink = page.NextPageRequest.GetHttpRequestMessage().RequestUri.AbsoluteUri;
+                Nextlink = page.NextLink;
                 return true;
             }
 
@@ -159,7 +157,7 @@ namespace Microsoft.Graph
             }
 
             // Detect nextLink loop
-            if (page.NextPageRequest != null && Nextlink.Equals(page.NextPageRequest.GetHttpRequestMessage().RequestUri.AbsoluteUri))
+            if (page.NextPageRequest != null && Nextlink.Equals(page.NextLink))
             {
                 throw new ServiceException(new Error()
                 {
