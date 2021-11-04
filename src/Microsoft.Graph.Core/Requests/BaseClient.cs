@@ -31,7 +31,7 @@ namespace Microsoft.Graph
         /// Constructs a new <see cref="BaseClient"/> with an <see cref="AnonymousAuthenticationProvider"/> and the given httpClient.
         /// </summary>
         /// <param name="httpClient">The custom <see cref="HttpClient"/> to be used for making requests</param>
-        protected internal BaseClient(HttpClient httpClient)
+        internal BaseClient(HttpClient httpClient)
         {
             this.RequestAdapter = new HttpClientRequestAdapter(new AnonymousAuthenticationProvider(),httpClient:httpClient);
         }
