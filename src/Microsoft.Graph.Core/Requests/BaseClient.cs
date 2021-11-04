@@ -4,67 +4,36 @@
 
 namespace Microsoft.Graph
 {
-    using System;
-    using System.Net.Http;
     using Microsoft.Graph.Core.Requests;
-    using System.Collections.Generic;
-    using Azure.Core;
-    using System.Linq;
     using Microsoft.Kiota.Abstractions;
     using Microsoft.Kiota.Abstractions.Authentication;
-    using Microsoft.Kiota.Authentication.Azure;
     using Microsoft.Kiota.Http.HttpClientLibrary;
+    using System.Net.Http;
 
     /// <summary>
     /// A default client implementation for microsoft graph
     /// </summary>
     public class BaseClient
     {
-        private string PathSegment { get; set; }
         /// <summary>
         /// The request adapter for making requests
         /// </summary>
-        public IRequestAdapter RequestAdapter { get; set; }
+        internal IRequestAdapter RequestAdapter { get; set; }
 
         /// <summary>
         /// Constructs a new <see cref="BaseClient"/>.
         /// </summary>
-        /// <param name="baseUrl">The base service URL. For example, "https://graph.microsoft.com/v1.0."</param>
-        /// <param name="authenticationProvider">The <see cref="IAuthenticationProvider"/> for authenticating request messages.</param>
-        public BaseClient(
-            string baseUrl,
-            IAuthenticationProvider authenticationProvider)
+        protected BaseClient()
         {
-            this.PathSegment = baseUrl;
-            this.RequestAdapter = new HttpClientRequestAdapter(authenticationProvider);
         }
 
         /// <summary>
-        /// Constructs a new <see cref="BaseClient"/>.
+        /// Constructs a new <see cref="BaseClient"/> with an <see cref="AnonymousAuthenticationProvider"/> and the given httpClient.
         /// </summary>
-        /// <param name="baseUrl">The base service URL. For example, "https://graph.microsoft.com/v1.0."</param>
-        /// <param name="tokenCredential">The <see cref="TokenCredential"/> for authenticating request messages.</param>
-        /// <param name="scopes">List of scopes for the authentication context.</param>
-        public BaseClient(
-            string baseUrl,
-            TokenCredential tokenCredential,
-            IEnumerable<string> scopes = null)
-        {
-            this.PathSegment = baseUrl;
-            this.RequestAdapter = new HttpClientRequestAdapter(new AzureIdentityAuthenticationProvider(tokenCredential, scopes?.ToArray() ?? new []{ "https://graph.microsoft.com/.default" }));
-        }
-
-        /// <summary>
-        /// Constructs a new <see cref="BaseClient"/>.
-        /// </summary>
-        /// <param name="baseUrl">The base service URL. For example, "https://graph.microsoft.com/v1.0."</param>
         /// <param name="httpClient">The custom <see cref="HttpClient"/> to be used for making requests</param>
-        public BaseClient(
-            string baseUrl,
-            HttpClient httpClient)
+        protected internal BaseClient(HttpClient httpClient)
         {
-            this.PathSegment = baseUrl;
-            this.RequestAdapter = new HttpClientRequestAdapter(new AnonymousAuthenticationProvider(), httpClient: httpClient);
+            this.RequestAdapter = new HttpClientRequestAdapter(new AnonymousAuthenticationProvider(),httpClient:httpClient);
         }
 
         /// <summary>
@@ -74,7 +43,7 @@ namespace Microsoft.Graph
         {
             get
             {
-                return new BatchRequestBuilder(this.PathSegment + "/$batch", RequestAdapter);
+                return new BatchRequestBuilder(RequestAdapter);
             }
         }
     }

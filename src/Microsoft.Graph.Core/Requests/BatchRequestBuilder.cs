@@ -21,13 +21,10 @@ namespace Microsoft.Graph.Core.Requests
 
         /// <summary>
         /// Instantiates a new BatchRequestBuilder and sets the default values.
-        /// <param name="currentPath">Current path for the request</param>
-        /// <param name="isRawUrl">Whether the current path is a raw URL</param>
         /// <param name="requestAdapter">The http core service to use to execute the requests.</param>
         /// </summary>
-        public BatchRequestBuilder(string currentPath, IRequestAdapter requestAdapter, bool isRawUrl = true)
+        public BatchRequestBuilder(IRequestAdapter requestAdapter)
         {
-            if (string.IsNullOrEmpty(currentPath)) throw new ArgumentNullException(nameof(currentPath));
             _ = requestAdapter ?? throw new ArgumentNullException(nameof(requestAdapter));
             UrlTemplate = "https://graph.microsoft.com/v1.0/$batch";
             RequestAdapter = requestAdapter;

@@ -46,7 +46,7 @@ namespace Microsoft.Graph
             }
 
             this.Session = uploadSession;
-            this._client = baseClient ?? InitializeClient(uploadSession.UploadUrl);
+            this._client = baseClient ?? InitializeClient();
             this._uploadStream = uploadStream;
             this._rangesRemaining = this.GetRangesRemaining(uploadSession);
             this._maxSliceSize = maxSliceSize < 0 ? DefaultMaxSliceSize : maxSliceSize;
@@ -59,13 +59,12 @@ namespace Microsoft.Graph
         /// <summary>
         /// Initialize a baseClient to use for the upload that does not have Auth enabled as the upload URLs explicitly do not need authentication.
         /// </summary>
-        /// <param name="uploadUrl">Url to perform the upload to from the session</param>
         /// <returns></returns>
-        private static BaseClient InitializeClient(string uploadUrl)
+        private static BaseClient InitializeClient()
         {
             HttpClient httpClient = GraphClientFactory.Create(); //no auth
             httpClient.SetFeatureFlag(FeatureFlag.FileUploadTask);
-            return new BaseClient(uploadUrl, httpClient);
+            return new BaseClient(httpClient);
         }
 
         /// <summary>
