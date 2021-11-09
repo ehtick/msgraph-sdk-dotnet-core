@@ -22,7 +22,7 @@ namespace Microsoft.Graph
             : this(
                   new JsonSerializerOptions
                   {
-                      IgnoreNullValues = true,
+                      DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                       PropertyNameCaseInsensitive = true
                   })
         {
