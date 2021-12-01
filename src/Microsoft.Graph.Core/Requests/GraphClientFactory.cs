@@ -19,12 +19,13 @@ namespace Microsoft.Graph
         private static readonly string SdkVersionHeaderName = CoreConstants.Headers.SdkVersionHeaderName;
 
         /// The version for current assembly.
+        // TODO: remove
         private static Version assemblyVersion = typeof(GraphClientFactory).GetTypeInfo().Assembly.GetName().Version;
 
         /// The value for the SDK version header.
+        // TODO : Remove
         private static string SdkVersionHeaderValue = string.Format(
                     CoreConstants.Headers.SdkVersionHeaderValueFormatString,
-                    "Graph",
                     assemblyVersion.Major,
                     assemblyVersion.Minor,
                     assemblyVersion.Build);
@@ -109,7 +110,11 @@ namespace Microsoft.Graph
 
             var pipelineWithFlags = CreatePipelineWithFeatureFlags(handlers, finalHandler);
             HttpClient client = new HttpClient(pipelineWithFlags.Pipeline);
-            client.DefaultRequestHeaders.Add(SdkVersionHeaderName, SdkVersionHeaderValue);
+
+            // TODO: We should be adding the header on each HttpRequestMessage. Probably in BaseRequest. Has to be added after service library.
+            client.DefaultRequestHeaders.Add(SdkVersionHeaderName, SdkVersionHeaderValue); // To delete
+
+
             client.SetFeatureFlag(pipelineWithFlags.FeatureFlags);
             client.Timeout = defaultTimeout;
             client.BaseAddress = DetermineBaseAddress(nationalCloud, version);
@@ -127,6 +132,7 @@ namespace Microsoft.Graph
             return new List<DelegatingHandler> {
                 new AuthenticationHandler(authenticationProvider),
                 new CompressionHandler(),
+                new TelemetryHandler(), // Validate that this is the best place in the order. Should update the design spec about the order of this.
                 new RetryHandler(),
                 new RedirectHandler()
             };
@@ -244,7 +250,7 @@ namespace Microsoft.Graph
         {
             if (delegatingHandler is AuthenticationHandler)
                 return FeatureFlag.AuthHandler;
-            else if (delegatingHandler is CompressionHandler)
+            else if (delegatingHandler is TelemetryHandler)
                 return FeatureFlag.CompressionHandler;
             else if (delegatingHandler is RetryHandler)
                 return FeatureFlag.RetryHandler;

@@ -325,6 +325,8 @@ namespace Microsoft.Graph
         /// <param name="request">The <see cref="HttpRequestMessage"/> representation of the request.</param>
         private void AddHeadersToRequest(HttpRequestMessage request)
         {
+
+
             if (this.Headers != null)
             {
                 foreach (var header in this.Headers)
@@ -332,6 +334,8 @@ namespace Microsoft.Graph
                     request.Headers.TryAddWithoutValidation(header.Name, header.Value);
                 }
             }
+
+            // TODO: Add SdkVersion header from this library and the optional service library fom this.Headers.
         }
 
         /// <summary>
